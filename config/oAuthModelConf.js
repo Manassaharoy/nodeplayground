@@ -42,23 +42,13 @@ var loadExampleData = async function () {
  * Methods used by all grant types.
  */
 
-var getAccessToken = function (token, callback) {
-  console.log("getAccessToken *********");
-  tokenModel
-    .findOne({
-      accessToken: token,
-    })
-    .lean()
-    .exec(
-      function (callback, err, token) {
-        if (!token) {
-          console.error("Token not found");
-          let msg = "Token not found";
-          callback(msg);
-        }
-        callback(err, token);
-      }.bind(null, callback)
-    );
+const getAccessToken = async (accessToken) => {
+  console.log("getAccessToken *********", accessToken);
+  const token = await tokenModel.findOne({ accessToken }).lean();
+  if (!token) {
+    console.error("Token not found");
+  }
+  return token;
 };
 
 const getClient = async (clientId, clientSecret) => {
@@ -71,10 +61,8 @@ const getClient = async (clientId, clientSecret) => {
   return client;
 };
 
-const saveToken = async (token, client, user, callback) => {
+const saveToken = async (token, client, user) => {
   console.log("saveToken");
-  console.log("token ********* ", token);
-  console.log("user ********* ", user);
   token.client = {
     id: client.clientId,
   };
@@ -83,20 +71,17 @@ const saveToken = async (token, client, user, callback) => {
     username: user.username || user.email || user.phoneNumber,
   };
 
-  try {
-    const savedToken = await tokenModel.create(token);
-    const { _id, __v, ...result } = savedToken.toObject();
-    // console.error("savedToken ---", savedToken);
-    callback(null, result);
-    // console.error("result ---", result);
-    return result;
-  } catch (err) {
-    console.error("Token not saved");
-    // callback(err);
-  }
-};
+  await tokenModel.deleteMany({
+    "user.username": user.username || user.email || user.phoneNumber,
+  });
 
-// ********** MY ADDITION Ends ******
+  const savedToken = await tokenModel.create(token).then((data) => {
+    const { _id, __v, ...result } = data.toObject();
+    // callback(null, result);
+    return result;
+  });
+  return savedToken;
+};
 
 /*
  * Method used only by password grant type.
@@ -144,68 +129,53 @@ var getUserFromClient = function (client, callback) {
  * Methods used only by refresh_token grant type.
  */
 
-var getRefreshToken = function (refreshToken, callback) {
+const getRefreshToken = async (refreshToken) => {
   console.log("getRefreshToken *********");
-  tokenModel
+  let refreshTokenGenerate = await tokenModel
     .findOne({
       refreshToken: refreshToken,
     })
-    .lean()
-    .exec(
-      function (callback, err, token) {
-        if (!token) {
-          console.error("Token not found");
-        }
-
-        callback(err, token);
-      }.bind(null, callback)
-    );
+    .lean();
+  console.log("refreshTokenGenerate ------- ", refreshTokenGenerate);
+  return refreshTokenGenerate;
 };
 
-var revokeToken = async function (token, callback) {
-  // try {
-  console.log("revokeToken *********");
-  let username = await tokenModel.findOne({
-    accessToken: token.accessToken,
-  });
+var revokeToken = async (token) => {
+  console.log("revokeToken ------********- ");
 
-  if (username) {
-    await user.findOneAndUpdate(
-      {
-        username: username.user.username,
-      },
-      {
-        $set: {
-          loggedinID: "",
-        },
-      }
-    );
-  }
-
-  tokenModel
+  let revokeToken = await tokenModel
     .deleteOne({
-      accessToken: token.accessToken,
+      refreshToken: token.refreshToken,
     })
-    .exec(
-      function (done, err, results) {
-        var deleteSuccess = results && results.deletedCount === 1;
+    .lean();
 
-        if (!deleteSuccess) {
-          console.log("No token found!");
-          // callback(err);
-          let msg = "No token found!";
-          // return response.json(msg);
-        }
-        console.log("Token removed!");
-        // callback('Token Deleted!')
-        // response.status(200).sendStatus("token removed")
-      }.bind(null, callback)
-    );
+  console.log("revokeToken ------- ", revokeToken);
+  return revokeToken;
 };
 
 /**
  * Export model definition object.
  **/
+var deleteToken = async (req) => {
+  console.log("****** deleteToken ****** ", req.body);
+
+  const { username, accessToken } = req.body;
+
+  let revokeToken = await tokenModel
+    .deleteOne({
+      $and: [{ "user.username": username }, { accessToken: accessToken }],
+    })
+    .lean()
+    .then(() => {
+      return true;
+    })
+    .catch(() => {
+      return false;
+    });
+
+  console.log("revokeToken ------- ", revokeToken);
+  return revokeToken;
+};
 
 module.exports = {
   getAccessToken: getAccessToken,
@@ -216,4 +186,5 @@ module.exports = {
   getRefreshToken: getRefreshToken,
   revokeToken: revokeToken,
   loadExampleData: loadExampleData,
+  deleteToken: deleteToken,
 };

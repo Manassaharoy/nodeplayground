@@ -41,6 +41,10 @@ const { coloredLog } = require("./utils/coloredLog.js");
 const { loadExampleData } = require("./auth/model.js");
 const User = require("./models/schema/user.js");
 const tryCatchMiddleware = require("./middlewares/tryCatch.js");
+const { obtainToken, tokenCheck } = require("./utils/oAuthFunctions.js");
+const responseSend = require("./utils/responseSend.js");
+const { ErrorHandler } = require("./utils/errorHandler.js");
+const { deleteToken } = require("./config/oAuthModelConf.js");
 
 dotenv.config();
 
@@ -125,64 +129,50 @@ app.post("/signup", async (req, res) => {
 app.get("/login", (req, res) => {
   res.render("login");
 });
-app.post("/login", async (req, res) => {
-  // const { email, phoneNumber, password } = req.body;
-  // console.log(
-  //   "email, phoneNumber, password ---- ",
-  //   email,
-  //   phoneNumber,
-  //   password
-  // );
+app.post(
+  "/login",
+  tryCatchMiddleware(async (req, res) => {
+    let token = await obtainToken(req, res).then((tokenData) => {
+      console.log("tokenData  ---- ", tokenData);
+      return tokenData;
+    });
+    console.log("token  ---- ", token);
+    // responseSend(res, token)
+    res.send("okay");
+  })
+);
 
+app.get(
+  "/secret",
+  tryCatchMiddleware(async (req, res) => {
+    let tokenStatus = await tokenCheck(req, res);
 
-  let token = await obtainToken(req, res, async (obj) => {
-    console.log("object inside login  -------  ", obj);
-    return obj;
-  });
-
-  console.log("obtainToken ---- ", token);
-
-  res.redirect("secret");
-});
-
-app.get("/secret", (req, res) => {
-  res.render("secret");
-});
+    if (tokenStatus) {
+      responseSend(res, "Valid");
+    } else {
+      throw new ErrorHandler("Access denied", 401);
+    }
+  })
+);
+app.get(
+  "/logout",
+  tryCatchMiddleware(async (req, res) => {
+    
+    let status = await deleteToken(req)
+    console.log("status ---", status)
+    if (status) {
+      responseSend(res, "Valid");
+    } else {
+      throw new ErrorHandler("Access denied", 500);
+    }
+  })
+);
 //!PLAYGROUND
 
 app.use("/devices", deviceRoute);
 
 //? middlewares
 app.use(errorHandlerMiddleware);
-
-
-app.oauth = new OAuth2Server({
-  model: require("./auth/model"),
-  // accessTokenLifetime: process.env.ACCESS_TOKEN_LIFETIME || 3600,
-  // allowBearerTokensInQueryString: true,
-});
-
-async function obtainToken(req, res, callback) {
-  var request = new Request(req);
-  var response = new Response(res);
-
-  // return app.oauth
-  //   .token(request, response)
-  //   .then(function (token) {
-  //     callback(token);
-  //   })
-  //   .catch(function (err) {
-  //     console.log("this is inside token catch!", err.message);
-  //   });
-  let token = await app.oauth.token(request, response).then((token)=>{
-    // console.log("TOKEN ------- ", token);
-    callback(token);
-  }).catch(function (err) {
-    console.log("this is inside token catch!", err.message);
-  })
-  callback(token)
-  // console.log("TOKEN ------- ", token);
-}
 
 //? Starting server
 app.listen(process.env.PORT || 5000, () => {
