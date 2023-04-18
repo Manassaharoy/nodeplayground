@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Manassaharoy/nodejsQuickStart.git"
+    "url": "https://github.com/Manassaharoy/nodeplayground"
   },
   "keywords": [
     "node",
@@ -21,7 +21,7 @@
     "ODM",
     "Mongoose"
   ],
-  "homepage": "https://github.com/Manassaharoy/nodejsstater#readme",
+  "homepage": "https://github.com/Manassaharoy/nodeplayground#readme",
   "engines": {
     "node": ">=12.0.0",
     "npm": ">=6.0.0"

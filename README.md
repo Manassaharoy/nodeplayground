@@ -1,7 +1,7 @@
 
-# Node js quickstart. 
+# Node js playground. 
 
-All necessary douments will be available soon.
+This is to test and playaround with all featues and functionalities
 
 # Features 
 
