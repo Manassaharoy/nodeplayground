@@ -8,6 +8,7 @@ All necessary douments will be available soon.
 - MVC structure
 - 2 types of encryption & decryption middleware. one is of AES and another one 
 - response middleware to make the response sending structure same for all api point.
+- oAuth 2.0 available
 - error handling middleware with enum HTTP error codes
 - monitor app by visiting url: /status
 - a colorful console log function

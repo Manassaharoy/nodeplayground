@@ -10,3 +10,8 @@
 ### Device routes added
 - device routes added, changes and modifications 
 
+## [1.2.0]
+
+### Device routes added
+- auth routes added, changes and modifications, oAuth implemented
+

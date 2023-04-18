@@ -4,8 +4,14 @@ const bcrypt = require('bcrypt');
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: true,
-    unique: true,
+    // required: true,
+    // unique: true,
+    validate: {
+      validator: function (v) {
+        return /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v);
+      },
+      message: "Please enter a valid email address",
+    },
   },
   phoneNumber: {
     type: String,

@@ -166,8 +166,13 @@ var deleteToken = async (req) => {
       $and: [{ "user.username": username }, { accessToken: accessToken }],
     })
     .lean()
-    .then(() => {
-      return true;
+    .then((data) => {
+      console.log("data -----", data.deletedCount);
+      if (data.deletedCount > 0) {
+        return true;
+      } else {
+        return false;
+      }
     })
     .catch(() => {
       return false;

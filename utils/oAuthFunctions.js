@@ -18,7 +18,7 @@ let obtainToken = async (req, res) => {
   var response = new Response(res);
 
   let token = await app.oauth.token(request, response).then((token) => {
-    console.log("TOKEN ------- ", token);
+    // console.log("TOKEN ------- ", token);
     return token;
   });
   return token;
