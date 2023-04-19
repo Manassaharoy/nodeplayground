@@ -13,6 +13,7 @@ const homeRoute = require("./routes/homeRoute.js");
 const userRoute = require("./routes/userRoute.js");
 const deviceRoute = require("./routes/deviceRoute.js");
 const authRoute = require("./routes/authRoute.js");
+const usersRoute = require("./routes/usersRoute.js");
 
 //? Additional imports
 const connectToDatabase = require("./config/connection.js");
@@ -68,15 +69,16 @@ app.use(loggerMiddleware);
 app.use(decryptionMiddleware);
 
 //? API points
-// app.use("/", homeRoute);
+app.use("/", homeRoute);
 // app.use("/user", userRoute);
 app.use("/auth", authRoute);
 app.use("/devices", deviceRoute);
+app.use("/users", usersRoute);
 
 //? middlewares
 app.use(errorHandlerMiddleware);
 
 //? Starting server
 app.listen(process.env.PORT || 5000, () => {
-  console.log(`Server is running on port ${process.env.PORT || 5000}`);
+  console.log(`Server is running on port ${process.env.PORT || 5000} & process id: ${process.pid}`);
 });

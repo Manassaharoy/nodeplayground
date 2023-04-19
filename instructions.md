@@ -35,3 +35,7 @@ model house {
 - ```npm i``` to install all dependencies
 - update "DATABASE_URL" in the .env file
 - ```npm run test``` to start the server
+
+
+### Multi cluster
+The server.js is is for multicluster node js. It will make server depending on the available cpu cores.

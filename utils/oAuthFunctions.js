@@ -9,7 +9,7 @@ const Response = OAuth2Server.Response;
 
 app.oauth = new OAuth2Server({
   model: require("../config/oAuthModelConf"),
-  accessTokenLifetime: process.env.ACCESS_TOKEN_LIFETIME || 20,
+  accessTokenLifetime: process.env.ACCESS_TOKEN_LIFETIME || 600,
   // allowBearerTokensInQueryString: true,
 });
 
