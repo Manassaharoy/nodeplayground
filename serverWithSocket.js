@@ -16,6 +16,15 @@ const io = new Server(httpServer, {
   },
   allowEIO3: true,
 });
+const { instrument } = require("@socket.io/admin-ui");
+instrument(io, {
+  auth: {
+    type: "basic",
+    username: "admin",
+    password: "$2b$10$heqvAkYMez.Va6Et2uXInOnkCT6/uQj1brkrbyG3LpopDklcq7ZOS" // "changeit" encrypted with bcrypt
+  },
+  mode: "development",
+});
 
 // const cors = require("cors");
 const bodyParser = require("body-parser");
