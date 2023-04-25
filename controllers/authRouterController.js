@@ -22,7 +22,10 @@ let renderHomePage = tryCatchMiddleware(async (req, res, next) => {
 });
 
 let signUpHandler = tryCatchMiddleware(async (req, res) => {
+  // console.log(JSON.parse(req.body))
+
   const { email, phoneNumber, password } = req.body;
+  console.log((email, phoneNumber, password));
 
   // check if user already exists
   const existingUser = await User.findOne({
@@ -40,13 +43,11 @@ let signUpHandler = tryCatchMiddleware(async (req, res) => {
       406
     );
   } else {
-    // create a new user instance with hashed password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+  
     const newUser = new User({
-      email: email && email,
+      email,
       phoneNumber,
-      password: hashedPassword,
+      password,
     });
 
     // save the user instance to the database
@@ -83,6 +84,48 @@ let signUpHandler = tryCatchMiddleware(async (req, res) => {
 });
 
 let loginHandler = tryCatchMiddleware(async (req, res) => {
+
+  const { authorization, grant_type, phoneNumber, password } = req.body
+
+  // console.log(Buffer.from("application:secret").toString('base64'));
+  // console.log(Buffer.from("YXBwbGljYXRpb246c2VjcmV0=", 'base64').toString('ascii'))
+
+  req.headers = {
+    authorization: `Basic ${Buffer.from(authorization).toString('base64')}`,
+    'content-type': 'application/x-www-form-urlencoded',
+    'content-length': '62'
+  }
+
+  req.body = {
+    grant_type: grant_type,
+    username: phoneNumber,
+    password: password
+  }
+
+
+  let token = await obtainToken(req, res).then((tokenData) => {
+    return tokenData;
+  });
+  responseSend(res, token);
+});
+
+let refreshTokenHanlder = tryCatchMiddleware(async (req, res) => {
+
+  const { authorization, grant_type, phoneNumber, password, refreshToken } = req.body
+
+  req.headers = {
+    authorization: `Basic ${Buffer.from(authorization).toString('base64')}`,
+    'content-type': 'application/x-www-form-urlencoded',
+    'content-length': '62'
+  }
+
+  req.body = {
+    grant_type: grant_type,
+    username: phoneNumber,
+    password: password,
+    refresh_token: refreshToken,
+  }
+
   let token = await obtainToken(req, res).then((tokenData) => {
     return tokenData;
   });
@@ -90,6 +133,13 @@ let loginHandler = tryCatchMiddleware(async (req, res) => {
 });
 
 let accessChekingHandler = tryCatchMiddleware(async (req, res) => {
+
+  console.log("req ---- ", req.body)
+
+  req.headers = {
+    authorization: `Bearer ${req.body.accessToken}`,
+  };
+
   let tokenStatus = await tokenCheck(req, res);
 
   if (tokenStatus) {
@@ -103,13 +153,12 @@ let logoutHandler = tryCatchMiddleware(async (req, res) => {
   let status = await deleteToken(req);
   if (status) {
     responseSend(res, {
-        message:"Successfully logged out"
+      message: "Successfully logged out",
     });
   } else {
     throw new ErrorHandler("Access denied", 403);
   }
 });
-
 
 module.exports = {
   renderLoginPage,
@@ -119,4 +168,5 @@ module.exports = {
   loginHandler,
   accessChekingHandler,
   logoutHandler,
+  refreshTokenHanlder
 };

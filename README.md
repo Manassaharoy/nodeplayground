@@ -1,7 +1,7 @@
 
 # Node js playground. 
 
-This is to test and playaround with all featues and functionalities
+This is to test and playaround with all featues and functionalities. Read the instructions before starting and changelogs to see changes
 
 # Features 
 

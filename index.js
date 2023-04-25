@@ -32,6 +32,9 @@ const {
 } = require("./middlewares/errorHandlerMiddleware.js");
 const connectPrisma = require("./config/prismaConnection.js");
 const { loadExampleData } = require("./config/oAuthModelConf.js");
+const { coloredLog } = require("./utils/coloredLog.js");
+const responseSend = require("./utils/responseSend.js");
+const { ErrorHandler } = require("./utils/errorHandler.js");
 
 dotenv.config();
 
@@ -69,6 +72,11 @@ app.use(loggerMiddleware);
 app.use(decryptionMiddleware);
 
 //? API points
+app.get("/test", (req, res)=>{
+  res.status(200).send({
+    data:true
+  })
+})
 app.use("/", homeRoute);
 // app.use("/user", userRoute);
 app.use("/auth", authRoute);
@@ -80,5 +88,13 @@ app.use(errorHandlerMiddleware);
 
 //? Starting server
 app.listen(process.env.PORT || 5000, () => {
-  console.log(`Server is running on port ${process.env.PORT || 5000} & process id: ${process.pid}`);
+  coloredLog(
+    [
+      "Server is running on port",
+      `${process.env.PORT || 5000}`,
+      `& single process id: `,
+      `${process.pid}`,
+    ],
+    6
+  );
 });

@@ -1,3 +1,16 @@
+## Flow:
+- ```npm i``` to install all dependencies
+- update "MONGO_DATABASE_URL" or "DATABASE_URL" in the .env file
+
+- ```npm run index``` to run the regular express server 
+- ```npm run server``` to run the multicluster express server
+- ```npm run socket``` to run the express server with socket
+
+
+### Multi cluster
+The server.js is is for multicluster node js. It will make server depending on the available cpu cores.
+
+
 ## Prisma commands:
 - After creating//modifying a schema use command to migrate ``` npx prisma migrate dev --name init --create-only ```
 - after migration run deploy command ``` npx prisma migrate deploy ```
@@ -31,11 +44,3 @@ model house {
 }
 ```
 
-## Flow:
-- ```npm i``` to install all dependencies
-- update "DATABASE_URL" in the .env file
-- ```npm run test``` to start the server
-
-
-### Multi cluster
-The server.js is is for multicluster node js. It will make server depending on the available cpu cores.

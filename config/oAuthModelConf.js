@@ -1,7 +1,5 @@
 const dotenv = require("dotenv").config();
 
-const user = require("../models/schema/user");
-
 /**
  * Configuration.
  */
@@ -9,6 +7,8 @@ const user = require("../models/schema/user");
 var clientModel = require("../models/schema/client"),
   tokenModel = require("../models/schema/token"),
   loggedInUserModel = require("../models/schema/user");
+const { ErrorHandler } = require("../utils/errorHandler");
+const bcrypt = require("bcrypt");
 
 /**
  * Add example client and user to the database (for debug).
@@ -52,6 +52,8 @@ const getAccessToken = async (accessToken) => {
 };
 
 const getClient = async (clientId, clientSecret) => {
+  console.log("getClient *********");
+
   let client = await clientModel
     .findOne({
       clientId: clientId,
@@ -62,17 +64,18 @@ const getClient = async (clientId, clientSecret) => {
 };
 
 const saveToken = async (token, client, user) => {
-  console.log("saveToken");
+  console.log("saveToken ***********");
+  console.log("saveToken user ***********", user);
   token.client = {
     id: client.clientId,
   };
 
   token.user = {
-    username: user.username || user.email || user.phoneNumber,
+    username: user.phoneNumber || user.username,
   };
 
   await tokenModel.deleteMany({
-    "user.username": user.username || user.email || user.phoneNumber,
+    "user.username": user.phoneNumber || user.username,
   });
 
   const savedToken = await tokenModel.create(token).then((data) => {
@@ -92,9 +95,20 @@ const getUser = async (username, password) => {
 
   console.log("getUser *********", username, password);
 
-  const user = await loggedInUserModel.findOne({ email: username }).lean();
+  const user = await loggedInUserModel
+    .findOne({ phoneNumber: username })
+    .lean();
   if (!user) {
     console.error("User not found");
+    throw new ErrorHandler("user not found", 401)
+  }
+
+  const passwordMatches = await bcrypt.compare(password, user.password);
+
+  if (!passwordMatches) {
+    console.error("Invalid password");
+    throw new ErrorHandler("invalid password", 401)
+    // return null;
   }
   return user;
 };
@@ -159,15 +173,15 @@ var revokeToken = async (token) => {
 var deleteToken = async (req) => {
   console.log("****** deleteToken ****** ", req.body);
 
-  const { username, accessToken } = req.body;
+  const { phoneNumber, accessToken } = req.body;
 
   let revokeToken = await tokenModel
     .deleteOne({
-      $and: [{ "user.username": username }, { accessToken: accessToken }],
+      $and: [{ "user.username": phoneNumber }, { accessToken: accessToken }],
     })
     .lean()
     .then((data) => {
-      console.log("data -----", data.deletedCount);
+      console.log("data -----", data);
       if (data.deletedCount > 0) {
         return true;
       } else {

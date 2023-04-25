@@ -15,3 +15,10 @@
 ### Device routes added
 - auth routes added, changes and modifications, oAuth implemented
 
+## [1.3.0]
+
+### encryption and oAuth updated
+- oauth works for both encrypted and non-encrypted requests
+- oAuth routes updated for json body acceptance
+- minor fix up overall the code
+

@@ -11,7 +11,7 @@ const IV = process.env.IV || "1583288699248111";
 const key = CryptoJS.enc.Utf8.parse(keyString);
 const iv = CryptoJS.enc.Utf8.parse(IV);
 
-const ENCRYPTION_STATUS = process.env.ENCRYPTION_STATUS || "TRUE";
+const ENCRYPTION_STATUS = process.env.ENCRYPTION_STATUS || "FALSE";
 
 //? Decryption middleware
 const decryptionMiddleware = (req, res, next) => {
@@ -19,10 +19,10 @@ const decryptionMiddleware = (req, res, next) => {
     coloredLog(["Decryption started"], 5);
     // coloredLog(["req.body", typeof(req.body), JSON.stringify(req.body)], 5);
 
-    if(req.method === "GET"){
-      console.log("ITS A GET");
-      next();
-    }
+    // if(req.method === "GET"){
+    //   console.log("ITS A GET");
+    //   next();
+    // }
 
     // Get the encrypted request body from the request
     const encryptedBase64 = req.body.data;
@@ -41,13 +41,14 @@ const decryptionMiddleware = (req, res, next) => {
     const decryptedBody = decrypted.toString(CryptoJS.enc.Utf8);
     // coloredLog(["decryptedBody ------- ", decryptedBody], 5);
     
-    if (typeof req.body === "string") {
-      req.body = JSON.parse(req.body);
-      // coloredLog(["Decrypted Data is object"], 5);
-    } else {
-      req.body = decryptedBody;
-      // coloredLog(["Decrypted Data is string "], 5);
-    }
+    // if (typeof req.body == "string") {
+    //   req.body = JSON.parse(decryptedBody);
+    //   coloredLog([typeof req.body," --if--  ",req.body], 5);
+    // } else {
+    //   req.body = decryptedBody;
+    //   coloredLog([typeof req.body," ---  ",req.body], 5);
+    // }
+    req.body = JSON.parse(decryptedBody);
     next();
   } else {
     coloredLog("Decryption is off", 5);
@@ -75,7 +76,7 @@ function encryptionMiddleware(req, res, next) {
     // const response = JSON.stringify(apiResponse(true, requestBody));
 
     // Encrypt the request body using AES encryption
-    const encrypted = CryptoJS.AES.encrypt(response, key, {
+    const encrypted = CryptoJS.AES.encrypt(requestBody, key, {
       iv: iv,
       padding: CryptoJS.pad.Pkcs7,
       mode: CryptoJS.mode.CBC,
