@@ -22,3 +22,8 @@
 - oAuth routes updated for json body acceptance
 - minor fix up overall the code
 
+## [1.4.0]
+
+- authorization token checking method changed
+- changes in routes
+
