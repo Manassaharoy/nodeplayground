@@ -134,16 +134,10 @@ let refreshTokenHanlder = tryCatchMiddleware(async (req, res) => {
 
 let accessChekingHandler = tryCatchMiddleware(async (req, res) => {
 
-  console.log("req ---- ", req.body)
-
-  req.headers = {
-    authorization: `Bearer ${req.body.accessToken}`,
-  };
-
   let tokenStatus = await tokenCheck(req, res);
 
   if (tokenStatus) {
-    responseSend(res, "Valid");
+    responseSend(res, {tokenValid:true});
   } else {
     throw new ErrorHandler("Access denied", 401);
   }

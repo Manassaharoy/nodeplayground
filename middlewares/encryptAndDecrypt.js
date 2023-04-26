@@ -19,37 +19,43 @@ const decryptionMiddleware = (req, res, next) => {
     coloredLog(["Decryption started"], 5);
     // coloredLog(["req.body", typeof(req.body), JSON.stringify(req.body)], 5);
 
-    // if(req.method === "GET"){
-    //   console.log("ITS A GET");
-    //   next();
-    // }
+    console.log(req.method)
 
-    // Get the encrypted request body from the request
-    const encryptedBase64 = req.body.data;
-    
-    // Convert the encrypted data from a Base64-encoded string to CryptoJS format
-    const encryptedData = CryptoJS.enc.Base64.parse(encryptedBase64);
-    
-    // Decrypt the request body using AES decryption
-    const decrypted = CryptoJS.AES.decrypt({ ciphertext: encryptedData }, key, {
-      iv: iv,
-      padding: CryptoJS.pad.Pkcs7,
-      mode: CryptoJS.mode.CBC,
-    });
-    
-    // Convert the decrypted data to a string and parse it as JSON
-    const decryptedBody = decrypted.toString(CryptoJS.enc.Utf8);
-    // coloredLog(["decryptedBody ------- ", decryptedBody], 5);
-    
-    // if (typeof req.body == "string") {
-    //   req.body = JSON.parse(decryptedBody);
-    //   coloredLog([typeof req.body," --if--  ",req.body], 5);
-    // } else {
-    //   req.body = decryptedBody;
-    //   coloredLog([typeof req.body," ---  ",req.body], 5);
-    // }
-    req.body = JSON.parse(decryptedBody);
-    next();
+    if (req.method === "GET" || req.method === "get") {
+      console.log("ITS A GET", req.method);
+      next();
+    } else {
+      // Get the encrypted request body from the request
+      const encryptedBase64 = req.body.data;
+
+      // Convert the encrypted data from a Base64-encoded string to CryptoJS format
+      const encryptedData = CryptoJS.enc.Base64.parse(encryptedBase64);
+
+      // Decrypt the request body using AES decryption
+      const decrypted = CryptoJS.AES.decrypt(
+        { ciphertext: encryptedData },
+        key,
+        {
+          iv: iv,
+          padding: CryptoJS.pad.Pkcs7,
+          mode: CryptoJS.mode.CBC,
+        }
+      );
+
+      // Convert the decrypted data to a string and parse it as JSON
+      const decryptedBody = decrypted.toString(CryptoJS.enc.Utf8);
+      // coloredLog(["decryptedBody ------- ", decryptedBody], 5);
+
+      // if (typeof req.body == "string") {
+      //   req.body = JSON.parse(decryptedBody);
+      //   coloredLog([typeof req.body," --if--  ",req.body], 5);
+      // } else {
+      //   req.body = decryptedBody;
+      //   coloredLog([typeof req.body," ---  ",req.body], 5);
+      // }
+      req.body = JSON.parse(decryptedBody);
+      next();
+    }
   } else {
     coloredLog("Decryption is off", 5);
     next();

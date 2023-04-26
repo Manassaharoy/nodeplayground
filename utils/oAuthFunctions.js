@@ -37,11 +37,13 @@ let obtainToken = async (req, res) => {
 let authenticateRequest = async (req, res) => {
   try {
 
-    const {accessToken} = req.body
+    // const {accessToken} = req.body
 
-    req.headers = {
-      authorization: `Bearer ${accessToken}`
-    }
+    //   req.headers = {
+    //     authorization: `Bearer ${accessToken}`
+    //   }
+
+
     var request = new Request(req);
     var response = new Response(res);
 

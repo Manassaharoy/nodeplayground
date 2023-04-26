@@ -3,6 +3,6 @@ const { handleUsers, singleUser } = require("../controllers/usersRouterControlle
 const router = require("express").Router();
 
 router.route("/").get(handleUsers);
-router.route("/userdetails").get(singleUser);
+router.route("/userdetails").post(singleUser);
 
 module.exports = router;
