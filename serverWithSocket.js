@@ -21,7 +21,7 @@ instrument(io, {
   auth: {
     type: "basic",
     username: "admin",
-    password: "$2b$10$heqvAkYMez.Va6Et2uXInOnkCT6/uQj1brkrbyG3LpopDklcq7ZOS" // "changeit" encrypted with bcrypt
+    password: "$2b$10$heqvAkYMez.Va6Et2uXInOnkCT6/uQj1brkrbyG3LpopDklcq7ZOS", // "changeit" encrypted with bcrypt
   },
   mode: "development",
 });
@@ -106,20 +106,16 @@ app.use(errorHandlerMiddleware);
 
 io.on("connection", (socket) => {
   console.log("connection: ", socket.id);
+  let socketConnected = socket.id;
+  io.emit("start", { data: ["Hi from server","hello from server"] });
 
-  socket.emit('hello', {'message': 'hello world'});
-
-  socket.on("hello", (data)=>{
-    console.log("hello : ", data);
-  })
-  
-  socket.on("return", (data)=>{
-    console.log("return : ", data);
-    socket.broadcast.emit('hello', {'message': 'hello world'});
+  socket.on("message",(payload)=>{
+    console.log("payload",payload)
+    io.emit("message", {payload})
   })
 
-  socket.on("disconnect", function (data) {
-    console.log("disconnect : ", data);
+  socket.on("disconnect", (data) => {
+    console.log("disconnect : ", socketConnected);
   });
 });
 
