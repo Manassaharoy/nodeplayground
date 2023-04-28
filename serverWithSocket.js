@@ -104,18 +104,154 @@ app.use("/users", usersRoute);
 //? middlewares
 app.use(errorHandlerMiddleware);
 
+const Rooms = require("./models/schema/rooms.js");
+
+// function to add a new room
+const addRoom = async (roomName, creator) => {
+  try {
+    const newRoom = new Rooms({
+      roomName,
+      creator,
+      members: [creator],
+      message: [],
+    });
+    await newRoom.save();
+    return newRoom;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// function to add a new room
+const joinRoom = async (roomId, username) => {
+  try {
+    const room = await Rooms.findById(roomId);
+    // Check if user is already a member
+    if (room.members.includes(username)) {
+      throw new Error(`${username} is already a member of this room`);
+    }
+    room.members.push(username);
+    return room.save();
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// function to remove a user from a room
+const leaveRoom = async (roomId, username) => {
+  try {
+    const room = await Rooms.findById(roomId);
+    if (!room) {
+      throw new Error(`Room with ID ${roomId} not found`);
+    }
+    if (!room.members.includes(username)) {
+      throw new Error(`User ${username} is not a member of room ${roomId}`);
+    } else {
+      room.members = room.members.filter((member) => member !== username);
+      await room.save();
+      return room;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// function to add a new message to a room
+const addMessageToRoom = async (roomId, sender, message) => {
+  try {
+    const room = await Rooms.findById(roomId);
+    if (!room) {
+      console.log("Room not found");
+      return;
+    }
+    room.message.push({ sender, message });
+    await room.save();
+    return room;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+let payloadData = (info, data, username, accessToken) => {
+  let payload = {
+    info: info || "",
+    data: data || "",
+    username: username || "",
+    accessToken: accessToken || "",
+  };
+  return payload;
+};
+
 io.on("connection", (socket) => {
-  console.log("connection: ", socket.id);
-  let socketConnected = socket.id;
-  io.emit("start", { data: ["Hi from server","hello from server"] });
+  let username = socket.handshake.query.username;
+  let socketID = socket.id;
 
-  socket.on("message",(payload)=>{
-    console.log("payload",payload)
-    io.emit("message", {payload})
-  })
+  coloredLog(["socket connection --- ", username, socketID], 2);
 
-  socket.on("disconnect", (data) => {
-    console.log("disconnect : ", socketConnected);
+  // message sent when someone connects
+  io.emit(
+    "activity",
+    payloadData(null, `${socket.id} has connected`, username, null)
+  );
+
+  // global chat
+  socket.on("globalchat", (payload) => {
+    socket.broadcast.emit(
+      "globalchat",
+      payloadData(socket.id, payload.message, payload.username)
+    );
+  });
+
+  // create room
+  socket.on("createRoom", async (payload) => {
+    const { roomName, creator } = payload;
+    const room = await addRoom(roomName, username);
+    if (room) {
+      socket.join(room._id);
+      socket.emit("roomCreated", payloadData(null, room._id, username, null));
+    }
+  });
+
+  // join room
+  socket.on("joinRoom", (payload) => {
+    const { roomId } = payload;
+    joinRoom(roomId, username);
+    socket.join(roomId);
+    io.to(roomId).emit(
+      "member",
+      payloadData(null, "user joined", username, null)
+    );
+    addMessageToRoom(roomId, "System", `${username} has joined the room`);
+  });
+
+  // send message in room
+  socket.on("roomMessage", (payload) => {
+    const { roomId, message } = payload;
+    addMessageToRoom(roomId, username, message);
+    io.to(roomId).emit(
+      "roomMessage",
+      payloadData(username, message, new Date())
+    );
+  });
+
+  // leave room
+  socket.on("leaveRoom", (payload) => {
+    const { roomId } = payload;
+    leaveRoom(roomId, username);
+    io.to(roomId).emit(
+      "member",
+      payloadData(null, "user left", username, null)
+    );
+    addMessageToRoom(roomId, "System", `${username} left the room`);
+  });
+
+  // message sent when someone disconnect
+  socket.on("disconnect", (payload) => {
+    coloredLog(["socket disconnect --- ", username, socketID], 1);
+    io.emit(
+      "activity",
+      payloadData(null, `${socket.id} has left`, username, null)
+    );
   });
 });
 
