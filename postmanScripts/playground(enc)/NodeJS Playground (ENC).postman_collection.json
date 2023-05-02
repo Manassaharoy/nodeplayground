@@ -1,0 +1,863 @@
+{
+	"info": {
+		"_postman_id": "20392cd6-162d-4a23-9004-ad0a9b931e4e",
+		"name": "NodeJS Playground (ENC)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24188960"
+	},
+	"item": [
+		{
+			"name": "Sign up",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Get the data to encrypt\r",
+							"\r",
+							"data = {\r",
+							"    \"email\": \"manas@gmail.com\",\r",
+							"    \"phoneNumber\": \"01515212628\",\r",
+							"    \"password\": \"111111\"\r",
+							"}\r",
+							"\r",
+							"var requestBody = JSON.stringify(data);\r",
+							"\r",
+							"// Encrypt the request body using AES encryption\r",
+							"var encrypted = CryptoJS.AES.encrypt(requestBody, key, {\r",
+							"    iv: iv,\r",
+							"    padding: CryptoJS.pad.Pkcs7,\r",
+							"    mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the encrypted data to a Base64-encoded string\r",
+							"var encryptedBase64 = encrypted.ciphertext.toString(CryptoJS.enc.Base64);\r",
+							"\r",
+							"// // Set the encrypted data as the request body\r",
+							"// request.data = encryptedBase64;\r",
+							"\r",
+							"pm.variables.set(\"data\", encryptedBase64)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Convert the Base64-encoded string to ciphertext\r",
+							"console.info(\"response from server\", pm.response.json().encoded)\r",
+							"var ciphertext = CryptoJS.enc.Base64.parse(pm.response.json().encoded);\r",
+							"\r",
+							"// Decrypt the ciphertext using AES encryption\r",
+							"var decrypted = CryptoJS.AES.decrypt({\r",
+							"  ciphertext: ciphertext\r",
+							"}, key, {\r",
+							"  iv: iv,\r",
+							"  padding: CryptoJS.pad.Pkcs7,\r",
+							"  mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the decrypted data to a string\r",
+							"var decryptedString = decrypted.toString(CryptoJS.enc.Utf8);\r",
+							"\r",
+							"console.log(JSON.parse(decryptedString));\r",
+							"\r",
+							"pm.test(\"response data: \"+decryptedString, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.visualizer.set(decryptedString)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\n{\n    \"data\": \"{{data}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/auth/signup",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"auth",
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login (get a token)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Get the data to encrypt\r",
+							"\r",
+							"data = {\r",
+							"    \"authorization\":\"application:secret\",\r",
+							"    \"grant_type\": \"password\",\r",
+							"    \"phoneNumber\": \"01515212628\",\r",
+							"    \"password\": \"111111\"\r",
+							"}\r",
+							"\r",
+							"var requestBody = JSON.stringify(data);\r",
+							"\r",
+							"// Encrypt the request body using AES encryption\r",
+							"var encrypted = CryptoJS.AES.encrypt(requestBody, key, {\r",
+							"    iv: iv,\r",
+							"    padding: CryptoJS.pad.Pkcs7,\r",
+							"    mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the encrypted data to a Base64-encoded string\r",
+							"var encryptedBase64 = encrypted.ciphertext.toString(CryptoJS.enc.Base64);\r",
+							"\r",
+							"// // Set the encrypted data as the request body\r",
+							"// request.data = encryptedBase64;\r",
+							"\r",
+							"pm.variables.set(\"data\", encryptedBase64)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Convert the Base64-encoded string to ciphertext\r",
+							"console.info(\"response from server\", pm.response.json().encoded)\r",
+							"var ciphertext = CryptoJS.enc.Base64.parse(pm.response.json().encoded);\r",
+							"\r",
+							"// Decrypt the ciphertext using AES encryption\r",
+							"var decrypted = CryptoJS.AES.decrypt({\r",
+							"  ciphertext: ciphertext\r",
+							"}, key, {\r",
+							"  iv: iv,\r",
+							"  padding: CryptoJS.pad.Pkcs7,\r",
+							"  mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the decrypted data to a string\r",
+							"var decryptedString = decrypted.toString(CryptoJS.enc.Utf8);\r",
+							"\r",
+							"console.log(JSON.parse(decryptedString));\r",
+							"\r",
+							"pm.test(\"response data: \"+decryptedString, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.visualizer.set(decryptedString)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\r\n{\r\n    \"data\": \"{{data}}\"\r\n}\r\n\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "auth check",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Get the data to encrypt\r",
+							"\r",
+							"data = {}\r",
+							"\r",
+							"var requestBody = JSON.stringify(data);\r",
+							"\r",
+							"// Encrypt the request body using AES encryption\r",
+							"var encrypted = CryptoJS.AES.encrypt(requestBody, key, {\r",
+							"    iv: iv,\r",
+							"    padding: CryptoJS.pad.Pkcs7,\r",
+							"    mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the encrypted data to a Base64-encoded string\r",
+							"var encryptedBase64 = encrypted.ciphertext.toString(CryptoJS.enc.Base64);\r",
+							"\r",
+							"// // Set the encrypted data as the request body\r",
+							"// request.data = encryptedBase64;\r",
+							"\r",
+							"pm.variables.set(\"data\", encryptedBase64)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Convert the Base64-encoded string to ciphertext\r",
+							"console.info(\"response from server\", pm.response.json().encoded)\r",
+							"var ciphertext = CryptoJS.enc.Base64.parse(pm.response.json().encoded);\r",
+							"\r",
+							"// Decrypt the ciphertext using AES encryption\r",
+							"var decrypted = CryptoJS.AES.decrypt({\r",
+							"  ciphertext: ciphertext\r",
+							"}, key, {\r",
+							"  iv: iv,\r",
+							"  padding: CryptoJS.pad.Pkcs7,\r",
+							"  mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the decrypted data to a string\r",
+							"var decryptedString = decrypted.toString(CryptoJS.enc.Utf8);\r",
+							"\r",
+							"console.log(JSON.parse(decryptedString));\r",
+							"\r",
+							"pm.test(\"response data: \"+decryptedString, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.visualizer.set(decryptedString)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "01cdd61d6a056c316ed43a4fae0fbcf2cc38ef8a",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"data\": \"{{data}}\"\r\n}\r\n\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/auth/authcheck",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"auth",
+						"authcheck"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "revoke token Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Get the data to encrypt\r",
+							"\r",
+							"data = {\r",
+							"    \"phoneNumber\":\"01515212628\",\r",
+							"    \"password\":\"111111\",\r",
+							"    \"accessToken\":\"b7ecb47fd7ec10cccf27a24f73fb5446576e3e21\"\r",
+							"}\r",
+							"\r",
+							"var requestBody = JSON.stringify(data);\r",
+							"\r",
+							"// Encrypt the request body using AES encryption\r",
+							"var encrypted = CryptoJS.AES.encrypt(requestBody, key, {\r",
+							"    iv: iv,\r",
+							"    padding: CryptoJS.pad.Pkcs7,\r",
+							"    mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the encrypted data to a Base64-encoded string\r",
+							"var encryptedBase64 = encrypted.ciphertext.toString(CryptoJS.enc.Base64);\r",
+							"\r",
+							"// // Set the encrypted data as the request body\r",
+							"// request.data = encryptedBase64;\r",
+							"\r",
+							"pm.variables.set(\"data\", encryptedBase64)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Convert the Base64-encoded string to ciphertext\r",
+							"console.info(\"response from server\", pm.response.json().encoded)\r",
+							"var ciphertext = CryptoJS.enc.Base64.parse(pm.response.json().encoded);\r",
+							"\r",
+							"// Decrypt the ciphertext using AES encryption\r",
+							"var decrypted = CryptoJS.AES.decrypt({\r",
+							"  ciphertext: ciphertext\r",
+							"}, key, {\r",
+							"  iv: iv,\r",
+							"  padding: CryptoJS.pad.Pkcs7,\r",
+							"  mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the decrypted data to a string\r",
+							"var decryptedString = decrypted.toString(CryptoJS.enc.Utf8);\r",
+							"\r",
+							"console.log(JSON.parse(decryptedString));\r",
+							"\r",
+							"pm.test(\"response data: \"+decryptedString, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.visualizer.set(decryptedString)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\r\n\r\n{\r\n    \"data\": \"{{data}}\"\r\n}\r\n\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/auth/logout",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"auth",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "refresh token grant Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Get the data to encrypt\r",
+							"\r",
+							"data = {\r",
+							"    \"authorization\":\"application:secret\",\r",
+							"    \"grant_type\":\"refresh_token\",\r",
+							"    \"phoneNumber\":\"01515212628\",\r",
+							"    \"password\":\"111111\",\r",
+							"    \"refreshToken\":\"c7e73213a03f280c9303f29220f43b1503ec3858\"\r",
+							"}\r",
+							"\r",
+							"var requestBody = JSON.stringify(data);\r",
+							"\r",
+							"// Encrypt the request body using AES encryption\r",
+							"var encrypted = CryptoJS.AES.encrypt(requestBody, key, {\r",
+							"    iv: iv,\r",
+							"    padding: CryptoJS.pad.Pkcs7,\r",
+							"    mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the encrypted data to a Base64-encoded string\r",
+							"var encryptedBase64 = encrypted.ciphertext.toString(CryptoJS.enc.Base64);\r",
+							"\r",
+							"// // Set the encrypted data as the request body\r",
+							"// request.data = encryptedBase64;\r",
+							"\r",
+							"pm.variables.set(\"data\", encryptedBase64)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Convert the Base64-encoded string to ciphertext\r",
+							"console.info(\"response from server\", pm.response.json().encoded)\r",
+							"var ciphertext = CryptoJS.enc.Base64.parse(pm.response.json().encoded);\r",
+							"\r",
+							"// Decrypt the ciphertext using AES encryption\r",
+							"var decrypted = CryptoJS.AES.decrypt({\r",
+							"  ciphertext: ciphertext\r",
+							"}, key, {\r",
+							"  iv: iv,\r",
+							"  padding: CryptoJS.pad.Pkcs7,\r",
+							"  mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the decrypted data to a string\r",
+							"var decryptedString = decrypted.toString(CryptoJS.enc.Utf8);\r",
+							"\r",
+							"console.log(JSON.parse(decryptedString));\r",
+							"\r",
+							"pm.test(\"response data: \"+decryptedString, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.visualizer.set(decryptedString)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\r\n\r\n{\r\n    \"data\": \"{{data}}\"\r\n}\r\n\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/auth/refreshtoken",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"auth",
+						"refreshtoken"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "All users",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Get the data to encrypt\r",
+							"\r",
+							"data = {}\r",
+							"\r",
+							"var requestBody = JSON.stringify(data);\r",
+							"\r",
+							"// Encrypt the request body using AES encryption\r",
+							"var encrypted = CryptoJS.AES.encrypt(requestBody, key, {\r",
+							"    iv: iv,\r",
+							"    padding: CryptoJS.pad.Pkcs7,\r",
+							"    mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the encrypted data to a Base64-encoded string\r",
+							"var encryptedBase64 = encrypted.ciphertext.toString(CryptoJS.enc.Base64);\r",
+							"\r",
+							"// // Set the encrypted data as the request body\r",
+							"// request.data = encryptedBase64;\r",
+							"\r",
+							"pm.variables.set(\"data\", encryptedBase64)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Convert the Base64-encoded string to ciphertext\r",
+							"console.info(\"response from server\", pm.response.json().encoded)\r",
+							"var ciphertext = CryptoJS.enc.Base64.parse(pm.response.json().encoded);\r",
+							"\r",
+							"// Decrypt the ciphertext using AES encryption\r",
+							"var decrypted = CryptoJS.AES.decrypt({\r",
+							"  ciphertext: ciphertext\r",
+							"}, key, {\r",
+							"  iv: iv,\r",
+							"  padding: CryptoJS.pad.Pkcs7,\r",
+							"  mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the decrypted data to a string\r",
+							"var decryptedString = decrypted.toString(CryptoJS.enc.Utf8);\r",
+							"\r",
+							"console.log(JSON.parse(decryptedString));\r",
+							"\r",
+							"pm.test(\"response data: \"+decryptedString, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.visualizer.set(decryptedString)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "958399130d1cc93b0f574cadb57d65fac858d997",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"data\": \"{{data}}\"\r\n}\r\n\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user details",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Get the data to encrypt\r",
+							"\r",
+							"data = {\r",
+							"    \"id\":\"6448d9000307c3e2e14f9b52\"\r",
+							"}\r",
+							"\r",
+							"\r",
+							"var requestBody = JSON.stringify(data);\r",
+							"\r",
+							"// Encrypt the request body using AES encryption\r",
+							"var encrypted = CryptoJS.AES.encrypt(requestBody, key, {\r",
+							"    iv: iv,\r",
+							"    padding: CryptoJS.pad.Pkcs7,\r",
+							"    mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the encrypted data to a Base64-encoded string\r",
+							"var encryptedBase64 = encrypted.ciphertext.toString(CryptoJS.enc.Base64);\r",
+							"\r",
+							"// // Set the encrypted data as the request body\r",
+							"// request.data = encryptedBase64;\r",
+							"\r",
+							"pm.variables.set(\"data\", encryptedBase64)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Import the CryptoJS library\r",
+							"var CryptoJS = require('crypto-js');\r",
+							"\r",
+							"// Define the encryption key and IV\r",
+							"var keyString = 'thisIsAverySpecialSecretKey00000';\r",
+							"var IV = '1583288699248111';\r",
+							"\r",
+							"// Convert the key and IV to CryptoJS format\r",
+							"var key = CryptoJS.enc.Utf8.parse(keyString);\r",
+							"var iv = CryptoJS.enc.Utf8.parse(IV);\r",
+							"\r",
+							"// Convert the Base64-encoded string to ciphertext\r",
+							"console.info(\"response from server\", pm.response.json().encoded)\r",
+							"var ciphertext = CryptoJS.enc.Base64.parse(pm.response.json().encoded);\r",
+							"\r",
+							"// Decrypt the ciphertext using AES encryption\r",
+							"var decrypted = CryptoJS.AES.decrypt({\r",
+							"  ciphertext: ciphertext\r",
+							"}, key, {\r",
+							"  iv: iv,\r",
+							"  padding: CryptoJS.pad.Pkcs7,\r",
+							"  mode: CryptoJS.mode.CBC\r",
+							"});\r",
+							"\r",
+							"// Convert the decrypted data to a string\r",
+							"var decryptedString = decrypted.toString(CryptoJS.enc.Utf8);\r",
+							"\r",
+							"console.log(JSON.parse(decryptedString));\r",
+							"\r",
+							"pm.test(\"response data: \"+decryptedString, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.visualizer.set(decryptedString)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "01cdd61d6a056c316ed43a4fae0fbcf2cc38ef8a",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\n{\n    \"data\": \"{{data}}\"\n}\n\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/users/userdetails",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"userdetails"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
