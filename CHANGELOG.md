@@ -26,4 +26,7 @@
 
 - authorization token checking method changed
 - changes in routes
+## [1.5.0]
+
+- SQL related
 
