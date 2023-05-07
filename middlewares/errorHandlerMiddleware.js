@@ -12,7 +12,7 @@ function errorHandlerMiddleware(error, req, res, next) {
     message: "Something went wrong",
   };
 
-  if (error.code === "P0002") {
+  if (error.code === "P0002" || error.code === "P2002") {
     defaultError = {
       code: 409,
       message: "Conflict",

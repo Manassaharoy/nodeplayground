@@ -14,6 +14,9 @@ const userRoute = require("./routes/userRoute.js");
 const deviceRoute = require("./routes/deviceRoute.js");
 const authRoute = require("./routes/authRoute.js");
 const usersRoute = require("./routes/usersRoute.js");
+const productRoute = require("./routes/productRoute.js");
+const testRoute = require("./routes/testRoute.js");
+const authRouteSQL = require("./routes/authRouteSQL.js");
 
 //? Additional imports
 const connectToDatabase = require("./config/connection.js");
@@ -32,6 +35,7 @@ const {
 } = require("./middlewares/errorHandlerMiddleware.js");
 const connectPrisma = require("./config/prismaConnection.js");
 const { loadExampleData } = require("./config/oAuthModelConf.js");
+const { loadExampleDataSQL } = require("./config/oAuthModelConfForSQL");
 const { coloredLog } = require("./utils/coloredLog.js");
 const responseSend = require("./utils/responseSend.js");
 const { ErrorHandler } = require("./utils/errorHandler.js");
@@ -54,10 +58,11 @@ app.use(bodyParser.json({ limit: "50mb" }));
 
 //? Database connection
 // TODO: uncomment connectToDatabase for mongodb and connectPrisma for prisma
-connectToDatabase(process.env.MONGO_DATABASE_URL);
-// connectPrisma()
+// connectToDatabase(process.env.MONGO_DATABASE_URL);
+connectPrisma()
 
-loadExampleData();
+// loadExampleData();
+// loadExampleDataSQL(); //for sql database
 
 //? set the view engine to ejs
 app.set("view engine", "ejs");
@@ -72,16 +77,15 @@ app.use(loggerMiddleware);
 app.use(decryptionMiddleware);
 
 //? API points
-app.get("/test", (req, res)=>{
-  res.status(200).send({
-    data:true
-  })
-})
+
 app.use("/", homeRoute);
 // app.use("/user", userRoute);
-app.use("/auth", authRoute);
-app.use("/devices", deviceRoute);
-app.use("/users", usersRoute);
+// app.use("/auth", authRoute);
+app.use("/authsql", authRouteSQL);
+// app.use("/devices", deviceRoute);
+// app.use("/users", usersRoute);
+// app.use("/product", productRoute)
+app.use("/test", testRoute);
 
 //? middlewares
 app.use(errorHandlerMiddleware);

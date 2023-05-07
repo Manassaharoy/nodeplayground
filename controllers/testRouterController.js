@@ -1,29 +1,33 @@
-const tryCatchMiddleware = require("../middlewares/tryCatch.js");
-const { coloredLog } = require("../utils/coloredLog.js");
-const { ErrorHandler } = require("../utils/errorHandler.js");
-const path = require("path");
-const os = require("os");
-const sendResponse = require("../utils/sendResponse.js");
-const responseSend = require("../utils/responseSend.js");
+const express = require("express");
+const app = express();
+const tryCatchMiddleware = require("../middlewares/tryCatch");
+const User = require("../models/schema/user");
+const { coloredLog } = require("../utils/coloredLog");
+const { ErrorHandler } = require("../utils/errorHandler");
+const responseSend = require("../utils/responseSend");
+const bcrypt = require("bcrypt");
+const { obtainToken, tokenCheck } = require("../utils/oAuthFunctions");
+const { deleteToken } = require("../config/oAuthModelConf");
+const {
+  handlePrismaGetSingleData,
+  handlePrismaGetPostData,
+} = require("../handlers/prismaHandlers");
+
 // to throw error =>  throw new ErrorHandler(message, statusCode);
 // to send response => data object{} and call responseSend(res, data)
-const testGetHandler = tryCatchMiddleware(async (req, res, next) => {
-  const { data } = req.body;
-  if (data) {
-    responseSend(res, data);
-  } else {
-    throw new ErrorHandler("Sent this error", 404);
-  }
+
+const handleTestGet = tryCatchMiddleware(async (req, res, next) => {
+  let availableClients = await handlePrismaGetSingleData("client");
+
+  responseSend(res, availableClients);
 });
 
-const testPostHandler = tryCatchMiddleware(async (req, res, next) => {
-  let data = {
-    text: "POST is okay",
-  };
+const handleTestPost = tryCatchMiddleware(async (req, res, next) => {
+  let data = await handlePrismaGetPostData("client");
   responseSend(res, data);
 });
 
 module.exports = {
-  testGetHandler,
-  testPostHandler,
+  handleTestGet,
+  handleTestPost,
 };

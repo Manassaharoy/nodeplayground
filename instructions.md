@@ -44,3 +44,14 @@ model house {
 }
 ```
 
+
+# How to use prisma query:
+In the file write below codes.
+```
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+```
+this will initialize prisma in that file. then to get data from a model ->
+
+``` let userData = await prisma.user.findMany()  ```
+

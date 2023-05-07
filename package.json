@@ -1,6 +1,6 @@
 {
   "name": "nodejsplayground",
-  "version": "1.1.0",
+  "version": "1.4.0",
   "description": "A nodejs playground",
   "main": "index.js",
   "type": "commonjs",

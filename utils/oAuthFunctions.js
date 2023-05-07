@@ -11,7 +11,8 @@ const Request = OAuth2Server.Request;
 const Response = OAuth2Server.Response;
 
 app.oauth = new OAuth2Server({
-  model: require("../config/oAuthModelConf"),
+  model: require("../config/oAuthModelConfForSQL"),
+  // model: require("../config/oAuthModelConf"),
   accessTokenLifetime: process.env.ACCESS_TOKEN_LIFETIME || 600,
   // allowBearerTokensInQueryString: true,
 });

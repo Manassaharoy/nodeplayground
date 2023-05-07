@@ -5,9 +5,15 @@ const User = require("../models/schema/user");
 const { coloredLog } = require("../utils/coloredLog");
 const { ErrorHandler } = require("../utils/errorHandler");
 const responseSend = require("../utils/responseSend");
-const bcrypt = require("bcrypt");
 const { obtainToken, tokenCheck } = require("../utils/oAuthFunctions");
-const { deleteToken } = require("../config/oAuthModelConf");
+const { deleteToken } = require("../config/oAuthModelConfForSQL");
+
+// TODO: Checking SQL
+
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+//
 
 let renderLoginPage = tryCatchMiddleware(async (req, res, next) => {
   res.render("login");
@@ -22,13 +28,13 @@ let renderHomePage = tryCatchMiddleware(async (req, res, next) => {
 });
 
 let signUpHandler = tryCatchMiddleware(async (req, res) => {
-  // console.log(JSON.parse(req.body))
-
   const { email, phoneNumber, password } = req.body;
 
   // check if user already exists
-  const existingUser = await User.findOne({
-    phoneNumber: phoneNumber,
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      phoneNumber: phoneNumber,
+    },
   });
 
   if (existingUser) {
@@ -42,88 +48,67 @@ let signUpHandler = tryCatchMiddleware(async (req, res) => {
       406
     );
   } else {
-  
-    const newUser = new User({
-      email,
-      phoneNumber,
-      password,
-    });
-
-    // save the user instance to the database
-    await newUser
-      .save()
+    await prisma.user
+      .create({
+        data: {
+          email,
+          phoneNumber,
+          password,
+        },
+      })
       .then(() => {
         responseSend(res, { message: "User created" });
       })
       .catch((err) => {
         console.log(err);
-        if (
-          err.message.includes(
-            "User validation failed: phoneNumber: Please enter a valid Bangladeshi phone number"
-          )
-        ) {
-          throw new ErrorHandler(err.message, 406);
-        } else if (
-          err.message.includes(
-            "User validation failed: email: Please enter a valid email address"
-          )
-        ) {
-          throw new ErrorHandler(err.message, 406);
-        } else if (err.code === 11000) {
-          coloredLog([err.code, err.message], 1);
-          throw new ErrorHandler(
-            `${JSON.stringify(err.keyValue)} already exists`,
-            409
-          );
-        } else {
-          throw new ErrorHandler(err.message, 500);
-        }
+        throw new ErrorHandler(err.message, 500);
       });
   }
 });
 
 let loginHandler = tryCatchMiddleware(async (req, res) => {
-
-  const { authorization, grant_type, phoneNumber, password } = req.body
+  const { authorization, grant_type, phoneNumber, password } = req.body;
 
   // console.log(Buffer.from("application:secret").toString('base64'));
   // console.log(Buffer.from("YXBwbGljYXRpb246c2VjcmV0=", 'base64').toString('ascii'))
 
   req.headers = {
-    authorization: `Basic ${Buffer.from(authorization).toString('base64')}`,
-    'content-type': 'application/x-www-form-urlencoded',
-    'content-length': '62'
-  }
+    authorization: `Basic ${Buffer.from(authorization).toString("base64")}`,
+    "content-type": "application/x-www-form-urlencoded",
+    "content-length": "62",
+  };
 
   req.body = {
     grant_type: grant_type,
     username: phoneNumber,
-    password: password
-  }
-
+    password: password,
+  };
 
   let token = await obtainToken(req, res).then((tokenData) => {
     return tokenData;
   });
+
+  console.log("token ------- ", token)
+
   responseSend(res, token);
 });
 
 let refreshTokenHanlder = tryCatchMiddleware(async (req, res) => {
-
-  const { authorization, grant_type, phoneNumber, password, refreshToken } = req.body
+  const { authorization, grant_type, phoneNumber, password, refreshToken } =
+    req.body;
 
   req.headers = {
-    authorization: `Basic ${Buffer.from(authorization).toString('base64')}`,
-    'content-type': 'application/x-www-form-urlencoded',
-    'content-length': '62'
-  }
+    authorization: `Basic ${Buffer.from(authorization).toString("base64")}`,
+    "content-type": "application/x-www-form-urlencoded",
+    "content-length": "62",
+  };
 
   req.body = {
     grant_type: grant_type,
     username: phoneNumber,
     password: password,
     refresh_token: refreshToken,
-  }
+  };
 
   let token = await obtainToken(req, res).then((tokenData) => {
     return tokenData;
@@ -132,11 +117,10 @@ let refreshTokenHanlder = tryCatchMiddleware(async (req, res) => {
 });
 
 let accessChekingHandler = tryCatchMiddleware(async (req, res) => {
-
   let tokenStatus = await tokenCheck(req, res);
 
   if (tokenStatus) {
-    responseSend(res, {tokenValid:true});
+    responseSend(res, { tokenValid: true });
   } else {
     throw new ErrorHandler("Access denied", 401);
   }
@@ -161,5 +145,5 @@ module.exports = {
   loginHandler,
   accessChekingHandler,
   logoutHandler,
-  refreshTokenHanlder
+  refreshTokenHanlder,
 };

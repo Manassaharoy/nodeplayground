@@ -6,72 +6,110 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model user {
-  id         String   @id @default(uuid())
-  name       String   @unique
-  createdAt  DateTime @default(now())
-  createdBy  String   @default("admin")
-  isAdmin    Boolean  @default(false)
-  updatedAt  DateTime @updatedAt
-  HouseOwned house[]  @relation("HouseOwner")
-  HouseBuilt house[]  @relation("HouseBuilder")
-}
+// model user {
+//   id         String   @id @default(uuid())
+//   name       String   @unique
+//   createdAt  DateTime @default(now())
+//   createdBy  String   @default("admin")
+//   isAdmin    Boolean  @default(false)
+//   updatedAt  DateTime @updatedAt
+//   HouseOwned house[]  @relation("HouseOwner")
+//   HouseBuilt house[]  @relation("HouseBuilder")
+// }
 
-model house {
+// model house {
+//   id           String   @id @default(uuid())
+//   address      String   @unique
+//   wifiPassword String?
+//   owner        user     @relation("HouseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+//   ownerId      String
+//   buildBy      user     @relation("HouseBuilder", fields: [buildById], references: [id], onDelete: Cascade)
+//   buildById    String
+//   createdAt    DateTime @default(now())
+//   updatedAt    DateTime @updatedAt
+// }
+
+// model device {
+//   id             Int           @id @default(autoincrement())
+//   device_id      String
+//   imei           String
+//   mercent_number String
+//   createdAt      DateTime      @default(now())
+//   createdBy      String        @default("admin")
+//   is_delete      Boolean       @default(false)
+//   ack_msg        message_ack[]
+// }
+
+// model mqtt_topic {
+//   id        Int      @id @default(autoincrement())
+//   device_id String
+//   topic     String
+//   createdAt DateTime @default(now())
+//   createdBy String   @default("admin")
+//   is_delete Boolean  @default(false)
+// }
+
+// model messages {
+//   id           Int           @id @default(autoincrement())
+//   device_id    String
+//   payload      String        @db.Text
+//   publish_time DateTime?     @default(now())
+//   createdAt    DateTime      @default(now())
+//   createdBy    String        @default("admin")
+//   is_delete    Boolean       @default(false)
+//   ack_msg      message_ack[]
+// }
+
+// model message_ack {
+//   id             Int      @id @default(autoincrement())
+//   message_id     Int
+//   device_id      Int
+//   device         device   @relation(fields: [device_id], references: [id], onDelete: Cascade)
+//   message        messages @relation(fields: [message_id], references: [id])
+//   createdAt      DateTime @default(now())
+//   createdBy      String   @default("admin")
+//   receiving_time DateTime @default(now())
+//   is_delete      Boolean  @default(false)
+// }
+
+model Client {
   id           String   @id @default(uuid())
-  address      String   @unique
-  wifiPassword String?
-  owner        user     @relation("HouseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId      String
-  buildBy      user     @relation("HouseBuilder", fields: [buildById], references: [id], onDelete: Cascade)
-  buildById    String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  clientId     String
+  clientSecret String
+  grants       String[]
+  redirectUris String[] @default([])
 }
 
-model device {
-  id             Int           @id @default(autoincrement())
-  device_id      String
-  imei           String
-  mercent_number String
-  createdAt      DateTime      @default(now())
-  createdBy      String        @default("admin")
-  is_delete      Boolean       @default(false)
-  ack_msg        message_ack[]
+model Token {
+  id                    String    @id @default(uuid())
+  accessToken           String
+  accessTokenExpiresAt  DateTime
+  refreshToken          String
+  refreshTokenExpiresAt DateTime
+  client                String
+  user                  String
 }
 
-model mqtt_topic {
-  id        Int      @id @default(autoincrement())
-  device_id String
-  topic     String
-  createdAt DateTime @default(now())
-  createdBy String   @default("admin")
-  is_delete Boolean  @default(false)
+// Prisma schema for User
+model User {
+  id          String   @id @default(cuid())
+  email       String?
+  phoneNumber String   @unique
+  password    String
+  createdAt   DateTime @default(now())
+  role        String   @default("user")
+  profile     Profile?
 }
 
-model messages {
-  id           Int           @id @default(autoincrement())
-  device_id    String
-  payload      String        @db.Text
-  publish_time DateTime?     @default(now())
-  createdAt    DateTime      @default(now())
-  createdBy    String        @default("admin")
-  is_delete    Boolean       @default(false)
-  ack_msg      message_ack[]
-}
-
-model message_ack {
-  id             Int      @id @default(autoincrement())
-  message_id     Int
-  device_id      Int
-  device         device   @relation(fields: [device_id], references: [id], onDelete: Cascade)
-  message        messages @relation(fields: [message_id], references: [id])
-  createdAt      DateTime @default(now())
-  createdBy      String   @default("admin")
-  receiving_time DateTime @default(now())
-  is_delete      Boolean  @default(false)
+model Profile {
+  id             String  @id @default(cuid())
+  age            Int?
+  address        String?
+  additionalData String?
+  user           User    @relation(fields: [userId], references: [id])
+  userId         String  @unique
 }

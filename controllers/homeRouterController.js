@@ -11,10 +11,11 @@ const homeGetHandler = tryCatchMiddleware(async (req, res, next) => {
 });
 
 const homePostHandler = tryCatchMiddleware(async (req, res, next) => {
-  let data = {
-    text: os.cpus().length,
-  };
-  responseSend(res, data);
+  // let data = {
+  //   text: os.cpus().length,
+  // };
+  // responseSend(res, data);
+  throw new ErrorHandler("Custom error", 423)
 });
 
 module.exports = {
