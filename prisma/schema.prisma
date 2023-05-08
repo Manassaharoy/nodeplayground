@@ -110,6 +110,6 @@ model Profile {
   age            Int?
   address        String?
   additionalData String?
-  user           User    @relation(fields: [userId], references: [id])
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String  @unique
 }

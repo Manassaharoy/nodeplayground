@@ -17,6 +17,7 @@ var clientModel = require("../models/schema/client"),
   loggedInUserModel = require("../models/schema/user");
 const { ErrorHandler } = require("../utils/errorHandler");
 const bcrypt = require("bcrypt");
+const { coloredLog } = require("../utils/coloredLog");
 
 /**
  * Add example client and user to the database (for debug).
@@ -51,8 +52,7 @@ const loadExampleData = async function () {
  */
 
 const getAccessToken = async (accessToken) => {
-  console.log("getAccessToken *********");
-  console.log("getAccessToken *********", accessToken);
+  coloredLog("getAccessToken", 3);
 
   const token = await prisma.token.findFirst({
     where: {
@@ -66,7 +66,7 @@ const getAccessToken = async (accessToken) => {
 };
 
 const getClient = async (clientId, clientSecret) => {
-  console.log("getClient *********");
+  coloredLog("getClient", 3);
 
   let client = await prisma.client.findFirst({
     where: {
@@ -74,12 +74,12 @@ const getClient = async (clientId, clientSecret) => {
       clientSecret: clientSecret,
     },
   });
-  //   console.log("CLient data --------", client);
+
   return client;
 };
 
 const saveToken = async (token, client, user) => {
-  console.log("saveToken ***********");
+  coloredLog("SAVETOKEN", 3);
 
   token.client = {
     id: client.clientId,
@@ -104,8 +104,8 @@ const saveToken = async (token, client, user) => {
         accessTokenExpiresAt: token.accessTokenExpiresAt,
         refreshToken: token.refreshToken,
         refreshTokenExpiresAt: token.refreshTokenExpiresAt,
-        client: token.client.id,
-        user: user.id,
+        client: token.client.id || client.clientId,
+        user: user.id || user.userid,
       },
     })
     .then((data) => {
@@ -121,11 +121,7 @@ const saveToken = async (token, client, user) => {
  */
 
 const getUser = async (username, password) => {
-  // let encPassword = await bcrypt.hash(password, 12);
-
-  console.log("getUser *********", username, password);
-
-  //TODO: bycrypt password
+  coloredLog("getUser", 3);
 
   const user = await prisma.user.findFirst({
     where: {
@@ -134,11 +130,16 @@ const getUser = async (username, password) => {
   });
 
   if (!user) {
-    console.error("User not found");
+    // console.error("User not found");
     throw new ErrorHandler("user not found", 401);
   }
 
-  console.log("user --------", user);
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordValid) {
+    // console.error("Incorrect password");
+    throw new ErrorHandler("incorrect password", 401);
+  }
 
   return user;
 };
@@ -146,27 +147,28 @@ const getUser = async (username, password) => {
 /*
  * Method used only by client_credentials grant type.
  */
+//TODO: THIS IS NOT UPDATED
+const getUserFromClient = function (client, callback) {
+  coloredLog("getUserFromClient *********", 3);
+  // clientModel
+  //   .findOne({
+  //     clientId: client.clientId,
+  //     clientSecret: client.clientSecret,
+  //     grants: "client_credentials",
+  //   })
+  //   .lean()
+  //   .exec(
+  //     function (callback, err, client) {
+  //       if (!client) {
+  //         console.error("Client not found");
+  //       }
 
-var getUserFromClient = function (client, callback) {
-  console.log("getUserFromClient *********");
-  clientModel
-    .findOne({
-      clientId: client.clientId,
-      clientSecret: client.clientSecret,
-      grants: "client_credentials",
-    })
-    .lean()
-    .exec(
-      function (callback, err, client) {
-        if (!client) {
-          console.error("Client not found");
-        }
-
-        callback(err, {
-          username: "",
-        });
-      }.bind(null, callback)
-    );
+  //       callback(err, {
+  //         username: "",
+  //       });
+  //     }.bind(null, callback)
+  //   );
+  return null;
 };
 
 /*
@@ -174,34 +176,54 @@ var getUserFromClient = function (client, callback) {
  */
 
 const getRefreshToken = async (refreshToken) => {
-  console.log("getRefreshToken !*********!");
-  let refreshTokenGenerate = await prisma.token.findFirst({
-    where: { refreshToken: refreshToken },
-  });
-  console.log("refreshTokenGenerate ------- ", refreshTokenGenerate);
+  coloredLog("getRefreshToken *********", 3);
+  let refreshTokenGenerate = await prisma.token
+    .findFirst({
+      where: { refreshToken: refreshToken },
+    })
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      console.log("error ------- ", error.message, error.code);
+      throw new ErrorHandler(error.message, error.code);
+    });
+  
+
+  refreshTokenGenerate = {
+    id: refreshTokenGenerate.user,
+    accessToken: refreshTokenGenerate.accessToken,
+    accessTokenExpiresAt: refreshTokenGenerate.accessTokenExpiresAt,
+    refreshToken: refreshTokenGenerate.refreshToken,
+    refreshTokenExpiresAt: refreshTokenGenerate.refreshTokenExpiresAt,
+    client: { id: refreshTokenGenerate.client },
+    user: { userid: refreshTokenGenerate.user },
+  };
+
   return refreshTokenGenerate;
 };
 
-var revokeToken = async (token) => {
-  console.log("revokeToken ------********- ");
-  console.log("revokeToken ------********- ", token);
+const revokeToken = async (token) => {
+  coloredLog("revokeToken ------********- ", 3);
 
+  let getRefreshTokenUser = await prisma.token.findFirst({
+    where: { refreshToken: token.refreshToken },
+  });
 
   let revokeToken = await prisma.token.delete({
     where: {
-      refreshToken: token.refreshToken,
+      id: getRefreshTokenUser.id,
     },
   });
 
-  console.log("revokeToken ------- ", revokeToken);
   return revokeToken;
 };
 
 /**
  * Export model definition object.
  **/
-var deleteToken = async (req) => {
-  console.log("****** deleteToken ****** ", req.body);
+const deleteToken = async (req) => {
+  coloredLog("deleteToken ------********- ", 3);
 
   const { user, accessToken } = req.body;
 

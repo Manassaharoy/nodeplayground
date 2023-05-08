@@ -59,7 +59,7 @@ app.use(bodyParser.json({ limit: "50mb" }));
 //? Database connection
 // TODO: uncomment connectToDatabase for mongodb and connectPrisma for prisma
 // connectToDatabase(process.env.MONGO_DATABASE_URL);
-connectPrisma()
+connectPrisma();
 
 // loadExampleData();
 // loadExampleDataSQL(); //for sql database

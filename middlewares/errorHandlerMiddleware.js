@@ -6,6 +6,8 @@ const generateRandomNumber = require("../utils/randomNumber.js");
 function errorHandlerMiddleware(error, req, res, next) {
   console.log(error);
   console.log("name --- ", error.name);
+  console.log("code --- ", error.code);
+  console.log("code --- ", error.code);
 
   let defaultError = {
     code: 500,
@@ -76,12 +78,12 @@ function errorHandlerMiddleware(error, req, res, next) {
 
   if (error instanceof ErrorHandler) {
     let encrpted;
-    if (HttpErrors[error.statusCode]) {
+    if (HttpErrors[error.code]) {
       encrpted = encryptData({
         success: false,
         data: null,
         isError: true,
-        error: HttpErrors[error.statusCode],
+        error: HttpErrors[error.code],
         errMsg: error.message,
       });
     } else {
@@ -101,7 +103,7 @@ function errorHandlerMiddleware(error, req, res, next) {
 
     return res
       .status(
-        HttpErrors[error.statusCode] ? error.statusCode : defaultError.code
+        HttpErrors[error.code] ? error.code : defaultError.code
       )
       .json(responseObject);
   }
