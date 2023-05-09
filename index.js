@@ -47,14 +47,14 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use(cors({ origin: "*" }));
 
 //? Additionals
-app.use(
-  bodyParser.urlencoded({
-    limit: "50mb",
-    extended: true,
-    parameterLimit: 50000,
-  })
-);
-app.use(bodyParser.json({ limit: "50mb" }));
+// app.use(
+//   bodyParser.urlencoded({
+//     limit: "50mb",
+//     extended: true,
+//     parameterLimit: 50000,
+//   })
+// );
+// app.use(bodyParser.json({ limit: "50mb" }));
 
 //? Database connection
 // TODO: uncomment connectToDatabase for mongodb and connectPrisma for prisma
@@ -69,7 +69,12 @@ app.set("view engine", "ejs");
 
 //? Express server monitor
 app.use(require("express-status-monitor")());
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true }));
+//? STATIC FILE SERVE
+const path = require('path')
+
+app.use('/images', express.static(path.join(__dirname, 'public/uploads')))
 
 //? middlewares
 

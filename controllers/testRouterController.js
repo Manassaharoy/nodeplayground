@@ -23,39 +23,40 @@ const prisma = new PrismaClient();
 
 //
 
-const handleTestGet = tryCatchMiddleware(async (req, res, next) => {
-  let availableClients = await handlePrismaGetSingleData("client");
+// const multer = require("multer");
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, "public/uploads/");
+//   },
+//   filename: async (req, file, cb) => {
+//     const { originalname } = file;
+//     let userId = await prisma.token.findFirst({
+//       where: {
+//         accessToken: req.headers.authorization.split(" ")[1],
+//       },
+//     });
+//     cb(null, `${userId.user}-${originalname}`);
+//   },
+// });
 
-  responseSend(res, availableClients);
+// const upload = multer({ storage }).single("profileImage");
+
+const handleTestGet = tryCatchMiddleware(async (req, res, next) => {
+  // let availableClients = await handlePrismaGetSingleData("client");
+
+  responseSend(res, { fail: null });
 });
 
 const handleTestPost = tryCatchMiddleware(async (req, res, next) => {
-  // let data = await handlePrismaGetPostData("client");
-  const { age, address, additionalData, userId } = req.body;
+  const { userId, ...profileData } = req.body;
 
-  // let checkUserExist = await prisma.profile.findUnique({
-  //   where:{
-  //     userId:userId
-  //   }
-  // })
-  // if(!checkUserExist){
-
-  //   let data =  await prisma.profile.create({
-  //     data: req.body,
-  //   });
-  //   responseSend(res, data);
-  // } else {
   let data = await prisma.profile.upsert({
     create: {
-      age,
-      address,
-      additionalData,
+      ...profileData,
       userId,
     },
     update: {
-      age,
-      address,
-      additionalData,
+      ...profileData,
     },
     where: {
       userId,
@@ -75,10 +76,17 @@ const handleTestPost = tryCatchMiddleware(async (req, res, next) => {
   const userWithoutPassword = excludePasswordAndID(data, ["password", "id"]);
 
   responseSend(res, userWithoutPassword);
-  // }
+});
+
+const handleTestImageUpload = tryCatchMiddleware(async (req, res, next) => {
+
+  let data = {"status":"uploaded"};
+  responseSend(res, data);
+
 });
 
 module.exports = {
   handleTestGet,
   handleTestPost,
+  handleTestImageUpload,
 };

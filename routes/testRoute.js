@@ -1,7 +1,24 @@
-const { handleTestGet, handleTestPost } = require("../controllers/testRouterController");
+const {
+  handleTestGet,
+  handleTestPost,
+  handleTestImageUpload,
+} = require("../controllers/testRouterController");
+const isAuthenticated = require("../middlewares/authentication");
 
 const router = require("express").Router();
+// TODO: Checking SQL
 
-router.route("/").get(handleTestGet).post(handleTestPost);
+const { PrismaClient } = require("@prisma/client");
+const { uploadSingle } = require("../handlers/imageUploadHandler");
+const prisma = new PrismaClient();
+
+router
+  .route("/")
+  .get(isAuthenticated, handleTestGet)
+  .post(isAuthenticated, handleTestPost);
+
+router
+  .route("/image")
+  .post(isAuthenticated, uploadSingle, handleTestImageUpload,);
 
 module.exports = router;

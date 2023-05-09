@@ -85,7 +85,7 @@ model Client {
 }
 
 model Token {
-  id                    String    @id @default(uuid())
+  id                    String   @id @default(uuid())
   accessToken           String
   accessTokenExpiresAt  DateTime
   refreshToken          String
@@ -106,10 +106,16 @@ model User {
 }
 
 model Profile {
-  id             String  @id @default(cuid())
-  age            Int?
-  address        String?
-  additionalData String?
-  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String  @unique
+  id               String  @id @default(cuid())
+  age              Int?
+  fullName         String?
+  gender           String?
+  maritualStatus   String?
+  address          String?
+  profilePhotoPath String?
+  profilePhoto     String? @default("https://storage.googleapis.com/bucket-playground-tal/user-profiles/user.webp")
+  additionalData   Json?
+  nomineeData      Json?
+  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String  @unique
 }
