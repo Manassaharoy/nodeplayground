@@ -1,3 +1,4 @@
+const multer = require("multer");
 const HttpErrors = require("../data/httpErrors.js"); // assuming your enum file is named HttpStatusEnum.js
 const encryptData = require("../utils/encryption.js");
 const { ErrorHandler } = require("../utils/errorHandler.js");
@@ -14,6 +15,7 @@ function errorHandlerMiddleware(error, req, res, next) {
     message: "Something went wrong",
   };
 
+  //? PRISMA ERROR HANDLING
   if (error.code === "P0002" || error.code === "P2002") {
     defaultError = {
       code: 409,
@@ -76,6 +78,28 @@ function errorHandlerMiddleware(error, req, res, next) {
     return res.status(defaultError.code).json(responseObject);
   }
 
+  if (error instanceof multer.MulterError) {
+    defaultError = {
+      code: 406,
+      message: "Not Acceptable",
+    };
+
+    let encrpted = encryptData({
+      success: false,
+      data: null,
+      isError: true,
+      error: defaultError,
+      errMsg: error.message,
+    });
+
+    const responseObject = {
+      encoded: encrpted,
+      jrn: generateRandomNumber(),
+    };
+
+    return res.status(defaultError.code).json(responseObject);
+  }
+
   if (error instanceof ErrorHandler) {
     let encrpted;
     if (HttpErrors[error.code]) {
@@ -102,9 +126,7 @@ function errorHandlerMiddleware(error, req, res, next) {
     };
 
     return res
-      .status(
-        HttpErrors[error.code] ? error.code : defaultError.code
-      )
+      .status(HttpErrors[error.code] ? error.code : defaultError.code)
       .json(responseObject);
   }
 

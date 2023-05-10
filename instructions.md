@@ -6,10 +6,8 @@ The env file must contain bellow values:
 MONGO_DATABASE_URL=""
 DATABASE_URL=""
 ENCRYPTION_STATUS = "FALSE"
-
+ACCESS_TOKEN_LIFETIME
 PORT = 5001
-
-BUCKET_LINK = ""
 
 ```
 
@@ -28,7 +26,7 @@ The server.js is is for multicluster node js. It will make server depending on t
 
 ## Prisma commands:
 
-- After creating//modifying a schema use command to migrate `npx prisma migrate dev --name init --create-only`
+- After creating//modifying a schema use command to migrate `npx prisma migrate dev --name init`
 - after migration run deploy command `npx prisma migrate deploy`
 
 ## Prisma relational database - Deleting one row and delete other relational rows:

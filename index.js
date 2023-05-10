@@ -17,6 +17,8 @@ const usersRoute = require("./routes/usersRoute.js");
 const productRoute = require("./routes/productRoute.js");
 const testRoute = require("./routes/testRoute.js");
 const authRouteSQL = require("./routes/authRouteSQL.js");
+const profileRoute = require("./routes/profileRoute.js");
+const adminRoute = require("./routes/adminRoute.js");
 
 //? Additional imports
 const connectToDatabase = require("./config/connection.js");
@@ -35,10 +37,15 @@ const {
 } = require("./middlewares/errorHandlerMiddleware.js");
 const connectPrisma = require("./config/prismaConnection.js");
 const { loadExampleData } = require("./config/oAuthModelConf.js");
-const { loadExampleDataSQL } = require("./config/oAuthModelConfForSQL");
+const { loadExampleDataSQL, createDefaultAdmin } = require("./config/oAuthModelConfForSQL");
 const { coloredLog } = require("./utils/coloredLog.js");
 const responseSend = require("./utils/responseSend.js");
 const { ErrorHandler } = require("./utils/errorHandler.js");
+
+//? Initialize folders for multer
+const multer = require("multer");
+const profilePhotos = multer({ dest: "public/uploads/profilePhotos" });
+const productPhotos = multer({ dest: "public/uploads/productPhotos" });
 
 dotenv.config();
 
@@ -62,7 +69,8 @@ app.use(cors({ origin: "*" }));
 connectPrisma();
 
 // loadExampleData();
-// loadExampleDataSQL(); //for sql database
+loadExampleDataSQL(); //for sql database
+createDefaultAdmin() //for sql database default admin create
 
 //? set the view engine to ejs
 app.set("view engine", "ejs");
@@ -72,9 +80,14 @@ app.use(require("express-status-monitor")());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 //? STATIC FILE SERVE
-const path = require('path')
+const path = require("path");
+const serveIndex = require("serve-index");
 
-app.use('/images', express.static(path.join(__dirname, 'public/uploads')))
+app.use(
+  "/staticfiles", //? parent link
+  express.static(path.join(__dirname, "public/")) //? Serve static files of the "public" directory
+  // serveIndex("public/", { icons: true }) //? This enables a FTP like view
+);
 
 //? middlewares
 
@@ -90,6 +103,8 @@ app.use("/authsql", authRouteSQL);
 // app.use("/devices", deviceRoute);
 // app.use("/users", usersRoute);
 // app.use("/product", productRoute)
+app.use("/admin", adminRoute);
+app.use("/user", profileRoute);
 app.use("/test", testRoute);
 
 //? middlewares

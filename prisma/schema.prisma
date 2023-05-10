@@ -77,45 +77,50 @@ datasource db {
 // }
 
 model Client {
-  id           String   @id @default(uuid())
+  id           String   @id @default(cuid())
   clientId     String
   clientSecret String
   grants       String[]
   redirectUris String[] @default([])
 }
 
-model Token {
-  id                    String   @id @default(uuid())
-  accessToken           String
-  accessTokenExpiresAt  DateTime
-  refreshToken          String
-  refreshTokenExpiresAt DateTime
-  client                String
-  user                  String
-}
-
-// Prisma schema for User
 model User {
   id          String   @id @default(cuid())
   email       String?
   phoneNumber String   @unique
   password    String
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
   role        String   @default("user")
   profile     Profile?
 }
 
+model Token {
+  id                    String   @id @default(cuid())
+  accessToken           String
+  accessTokenExpiresAt  DateTime
+  refreshToken          String
+  refreshTokenExpiresAt DateTime
+  client                String
+  user                  String
+  createrAt             DateTime @default(now())
+}
+
 model Profile {
-  id               String  @id @default(cuid())
+  id               String    @id @default(cuid())
   age              Int?
   fullName         String?
   gender           String?
+  DOB              DateTime?
   maritualStatus   String?
   address          String?
   profilePhotoPath String?
-  profilePhoto     String? @default("https://storage.googleapis.com/bucket-playground-tal/user-profiles/user.webp")
+  profilePhotoURL  String?
   additionalData   Json?
   nomineeData      Json?
-  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId           String  @unique
+  locked           Boolean   @default(false)
+  deleted          Boolean   @default(false)
+  updatedAt        DateTime  @default(now()) @updatedAt
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String    @unique
 }

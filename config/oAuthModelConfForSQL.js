@@ -19,6 +19,8 @@ const { ErrorHandler } = require("../utils/errorHandler");
 const bcrypt = require("bcrypt");
 const { coloredLog } = require("../utils/coloredLog");
 
+const multilogin = process.env.MULTIPLE_DEVICE_LOGIN || false;
+
 /**
  * Add example client and user to the database (for debug).
  */
@@ -44,6 +46,28 @@ const loadExampleData = async function () {
         },
       ],
     });
+  }
+};
+
+const createDefaultAdmin = async function () {
+  let availableAdmin = await prisma.user.findMany({
+    where: {
+      role: "admin",
+    },
+  });
+  if (availableAdmin.length <= 0) {
+    const salt = await bcrypt.genSalt(12);
+    // hash the password along with our new salt
+    const hashedPassword = await bcrypt.hash("100200300", salt);
+    await prisma["user"].create({
+      data: {
+        email: "admin@admin.com",
+        phoneNumber: "01234567891",
+        password: hashedPassword,
+        role: "admin",
+      },
+    });
+    coloredLog(["Created default admin"], 1);
   }
 };
 
@@ -91,11 +115,14 @@ const saveToken = async (token, client, user) => {
 
   token.userid = user.id;
 
-  await prisma.token.deleteMany({
-    where: {
-      user: user.id,
-    },
-  });
+  //TODO: MULTI LOGIN HANDLED HERE
+  if (!multilogin) {
+    await prisma.token.deleteMany({
+      where: {
+        user: user.id,
+      },
+    });
+  }
 
   const savedToken = await prisma.token
     .create({
@@ -188,7 +215,6 @@ const getRefreshToken = async (refreshToken) => {
       console.log("error ------- ", error.message, error.code);
       throw new ErrorHandler(error.message, error.code);
     });
-  
 
   refreshTokenGenerate = {
     id: refreshTokenGenerate.user,
@@ -252,4 +278,5 @@ module.exports = {
   revokeToken: revokeToken,
   loadExampleDataSQL: loadExampleData,
   deleteToken: deleteToken,
+  createDefaultAdmin: createDefaultAdmin,
 };

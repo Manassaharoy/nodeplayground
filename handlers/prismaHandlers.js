@@ -36,6 +36,10 @@ let handlePrismaGetPostData = async (modelName) => {
   return data;
 };
 
+let prismaSingleData = async (modelName) =>{
+  let data = await prisma[modelName]
+}
+
 module.exports = {
   handlePrismaGetSingleData,
   handlePrismaGetPostData,
