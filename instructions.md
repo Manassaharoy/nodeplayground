@@ -3,11 +3,13 @@
 The env file must contain bellow values:
 
 ```
-MONGO_DATABASE_URL=""
-DATABASE_URL=""
+MONGO_DATABASE_URL="mongodb+srv://username:password@testdatabase.aaaaa.mongodb.net/playground?retryWrites=true&w=majority"
+DATABASE_URL="postgresql://postgres@localhost:5432/node_db_oauth"
 ENCRYPTION_STATUS = "FALSE"
-ACCESS_TOKEN_LIFETIME
+
 PORT = 5001
+ACCESS_TOKEN_LIFETIME = 3600
+MULTIPLE_DEVICE_LOGIN = "TRUE"
 
 ```
 

@@ -29,4 +29,7 @@
 ## [1.5.0]
 
 - SQL related
+## [1.5.0]
+
+- SQL related and oauth route changed also admin route is updated
 
