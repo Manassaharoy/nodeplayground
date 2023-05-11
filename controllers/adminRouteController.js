@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 
 //
 
-let loginHandler = tryCatchMiddleware(async (req, res) => {
+let adminLoginHandler = tryCatchMiddleware(async (req, res) => {
   const { authorization, grant_type, phoneNumber, password } = req.body;
 
   req.headers = {
@@ -36,8 +36,7 @@ let loginHandler = tryCatchMiddleware(async (req, res) => {
   responseSend(res, token);
 });
 
-
-let logoutHandler = tryCatchMiddleware(async (req, res) => {
+let adminLogoutHandler = tryCatchMiddleware(async (req, res) => {
   let status = await deleteToken(req);
   if (status) {
     responseSend(res, {
@@ -49,6 +48,6 @@ let logoutHandler = tryCatchMiddleware(async (req, res) => {
 });
 
 module.exports = {
-  loginHandler,
-  logoutHandler,
+  adminLoginHandler,
+  adminLogoutHandler,
 };

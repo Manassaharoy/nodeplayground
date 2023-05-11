@@ -91,8 +91,9 @@ model User {
   password    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
-  role        String   @default("user")
+  role        Role     @default(user)
   profile     Profile?
+  token       Token[]
 }
 
 model Token {
@@ -104,6 +105,8 @@ model Token {
   client                String
   user                  String
   createrAt             DateTime @default(now())
+  tokenAvailer          User     @relation(fields: [tokenAvailerId], references: [id], onDelete: Cascade)
+  tokenAvailerId        String
 }
 
 model Profile {
@@ -123,4 +126,9 @@ model Profile {
   updatedAt        DateTime  @default(now()) @updatedAt
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId           String    @unique
+}
+
+enum Role {
+  user
+  admin
 }

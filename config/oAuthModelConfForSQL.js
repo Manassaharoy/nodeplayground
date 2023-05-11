@@ -21,6 +21,22 @@ const { coloredLog } = require("../utils/coloredLog");
 
 const multilogin = process.env.MULTIPLE_DEVICE_LOGIN || false;
 
+let getUserId = async (req) => {
+  let accessToken = req.headers.authorization.split(" ")[1];
+
+  let userData = await prisma["token"].findFirst({
+    where: {
+      accessToken: accessToken,
+    },
+  });
+
+  if (userData) {
+    return { user: userData?.user, accessToken: accessToken };
+  } else {
+    return null;
+  }
+};
+
 /**
  * Add example client and user to the database (for debug).
  */
@@ -116,14 +132,14 @@ const saveToken = async (token, client, user) => {
   token.userid = user.id;
 
   //TODO: MULTI LOGIN HANDLED HERE
-  if (!multilogin) {
+
+  if (multilogin === "FALSE" || multilogin === "false" || !multilogin) {
     await prisma.token.deleteMany({
       where: {
         user: user.id,
       },
     });
   }
-
   const savedToken = await prisma.token
     .create({
       data: {
@@ -133,6 +149,11 @@ const saveToken = async (token, client, user) => {
         refreshTokenExpiresAt: token.refreshTokenExpiresAt,
         client: token.client.id || client.clientId,
         user: user.id || user.userid,
+        tokenAvailer: {
+          connect: {
+            id: user.id || user.userid,
+          },
+        },
       },
     })
     .then((data) => {
@@ -251,20 +272,43 @@ const revokeToken = async (token) => {
 const deleteToken = async (req) => {
   coloredLog("deleteToken ------********- ", 3);
 
-  const { user, accessToken } = req.body;
+  let userId = await getUserId(req);
 
-  const result = await prisma.token.deleteMany({
-    where: {
-      AND: [{ user }, { accessToken }],
-    },
-  });
-
-  const deleteCount = result.count;
-
-  if (deleteCount > 0) {
-    return true;
-  } else {
+  if (!userId) {
     return false;
+  } else {
+    const { user, accessToken } = userId;
+
+    if (multilogin === "FALSE" || multilogin === "false" || !multilogin) {
+      const result = await prisma.token.deleteMany({
+        where: {
+          user,
+        },
+      });
+
+      const deleteCount = result.count;
+
+      if (deleteCount > 0) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      const result = await prisma.token.deleteMany({
+        where: {
+          user,
+          accessToken,
+        },
+      });
+
+      const deleteCount = result.count;
+
+      if (deleteCount > 0) {
+        return true;
+      } else {
+        return false;
+      }
+    }
   }
 };
 

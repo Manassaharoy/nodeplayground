@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 //
 
-const isAllowed = tryCatchMiddleware(async (req, res, next) => {
+const isAdmin = tryCatchMiddleware(async (req, res, next) => {
   const { phoneNumber, email } = req.body;
 
   if (!phoneNumber) {
@@ -34,4 +34,4 @@ const isAllowed = tryCatchMiddleware(async (req, res, next) => {
   }
 });
 
-module.exports = isAllowed;
+module.exports = isAdmin;
