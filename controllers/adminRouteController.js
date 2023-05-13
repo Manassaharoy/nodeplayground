@@ -47,7 +47,30 @@ let adminLogoutHandler = tryCatchMiddleware(async (req, res) => {
   }
 });
 
+let adminPofileUpdateHandler = tryCatchMiddleware(async (req, res, next) => {
+  const profileData = req.body;
+  let userId = res.locals.userIdFromToken;
+
+  let userProfileData = await prisma.profile.upsert({
+    create: {
+      ...profileData,
+      userId: userId,
+    },
+    update: {
+      ...profileData,
+    },
+    where: {
+      userId: userId,
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  responseSend(res, userProfileData);
+});
 module.exports = {
   adminLoginHandler,
   adminLogoutHandler,
+  adminPofileUpdateHandler,
 };

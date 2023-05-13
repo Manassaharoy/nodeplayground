@@ -49,27 +49,6 @@ function sanitizeUser(user, keysToExclude) {
   return sanitizedUser;
 }
 
-// Sanitize user for admin view
-// const adminView = sanitizeUser(userProfileData, []);
-
-// const multer = require("multer");
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "public/uploads/");
-//   },
-//   filename: async (req, file, cb) => {
-//     const { originalname } = file;
-//     let userId = await prisma.token.findFirst({
-//       where: {
-//         accessToken: req.headers.authorization.split(" ")[1],
-//       },
-//     });
-//     cb(null, `${userId.user}-${originalname}`);
-//   },
-// });
-
-// const upload = multer({ storage }).single("profileImage");
-
 const handleTestGet = tryCatchMiddleware(async (req, res, next) => {
   // let availableClients = await handlePrismaGetSingleData("client");
 

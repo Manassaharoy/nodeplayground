@@ -57,6 +57,7 @@ const decryptionMiddleware = (req, res, next) => {
       next();
     }
   } else {
+    console.log("req ------", req.body);
     coloredLog("Decryption is off", 5);
     next();
   }
