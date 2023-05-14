@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 //
 
-const isAdmin = tryCatchMiddleware(async (req, res, next) => {
+const isAdminCheckBeforeLogin = tryCatchMiddleware(async (req, res, next) => {
   const { phoneNumber, email } = req.body;
 
   if (!phoneNumber) {
@@ -22,10 +22,10 @@ const isAdmin = tryCatchMiddleware(async (req, res, next) => {
     },
   });
 
-  //   console.log("user data ----- ", userData);
-
   if (userData?.role === "admin") {
     // user is authenticated, move on to the next middleware
+
+    res.locals.useridfromtoken = userData.user;
 
     next();
   } else {
@@ -34,4 +34,34 @@ const isAdmin = tryCatchMiddleware(async (req, res, next) => {
   }
 });
 
-module.exports = isAdmin;
+const isAdminCheckAfterLogin = tryCatchMiddleware(async (req, res, next) => {
+  const accessToken = req.headers.authorization.split(" ")[1];
+
+  const userDataID = await prisma.token.findFirst({
+    where: {
+      accessToken: accessToken,
+    },
+  });
+
+  if (!userDataID) {
+    throw new ErrorHandler("Access denied", 401);
+  } else {
+    let userData = await prisma["user"].findUnique({
+      where: {
+        id: userDataID.user,
+      },
+    });
+
+    if (userData?.role === "admin") {
+      // user is authenticated, move on to the next middleware
+      res.locals.useridfromtoken = userDataID.user;
+
+      next();
+    } else {
+      // user is not authenticated, throw an error
+      throw new ErrorHandler("Access denied", 401);
+    }
+  }
+});
+
+module.exports = { isAdminCheckBeforeLogin, isAdminCheckAfterLogin };

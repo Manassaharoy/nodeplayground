@@ -19,7 +19,7 @@ const decryptionMiddleware = (req, res, next) => {
     coloredLog(["Decryption started"], 5);
     // coloredLog(["req.body", typeof(req.body), JSON.stringify(req.body)], 5);
 
-    console.log(req.method)
+    console.log(req.method);
 
     if (req.method === "GET" || req.method === "get") {
       console.log("ITS A GET", req.method);
@@ -57,7 +57,6 @@ const decryptionMiddleware = (req, res, next) => {
       next();
     }
   } else {
-    console.log("req ------", req.body);
     coloredLog("Decryption is off", 5);
     next();
   }

@@ -28,6 +28,7 @@ const isValidAdmin = tryCatchMiddleware(async (req, res, next) => {
     }
   }
 });
+
 const isValid = tryCatchMiddleware(async (req, res, next) => {
   const requiredParams = [
     "authorization",
