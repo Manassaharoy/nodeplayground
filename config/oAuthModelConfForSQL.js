@@ -81,6 +81,8 @@ const createDefaultAdmin = async function () {
         phoneNumber: "01234567891",
         password: hashedPassword,
         role: "admin",
+        locked: false,
+        deleted: false,
       },
     });
     coloredLog(["Created default admin"], 1);

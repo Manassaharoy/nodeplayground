@@ -32,4 +32,7 @@
 ## [1.5.0]
 
 - SQL related and oauth route changed also admin route is updated
+## [1.7.0]
+
+- admin route and functions updated
 

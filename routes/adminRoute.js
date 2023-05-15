@@ -1,19 +1,25 @@
+const router = require("express").Router();
 const {
   adminLoginHandler,
   adminLogoutHandler,
   adminPofileUpdateHandler,
   adminAccountUpdateHandler,
   adminCreateNewUserHandler,
+  adminListAllUserHandler,
+  adminUpdateUserProfileHandler,
+  adminProfileViewHandler,
+  adminPhotoUploadHandler,
+  adminPhotoRemoveHandler,
+  adminAllLoggedInUsersHandler,
+  adminRemoveSessionForAnUserHandler,
 } = require("../controllers/adminRouteController");
 const isAuthenticated = require("../middlewares/authentication");
-// const getUserIdFromToken = require("../middlewares/getUserIdFromToken");
 const {
   isAdminCheckAfterLogin,
   isAdminCheckBeforeLogin,
 } = require("../middlewares/roleChecking");
 const { isValidAdmin } = require("../middlewares/validationCheck");
-
-const router = require("express").Router();
+const { uploadSingle } = require("../handlers/imageUploadHandler");
 
 router
   .route("/login")
@@ -26,17 +32,34 @@ router
   .route("/updateaccountinfo")
   .patch(isAdminCheckAfterLogin, isAuthenticated, adminAccountUpdateHandler);
 router
-  .route("/updateprofile")
+  .route("/profile")
+  .get(isAdminCheckAfterLogin, isAuthenticated, adminProfileViewHandler)
   .patch(isAdminCheckAfterLogin, isAuthenticated, adminPofileUpdateHandler);
 
-//? Create user manually
 router
-  .route("/createuser")
-  .post(isAdminCheckAfterLogin, isAuthenticated, adminCreateNewUserHandler);
+  .route("/profile/uploadpicture")
+  .post(
+    isAdminCheckAfterLogin,
+    isAuthenticated,
+    uploadSingle,
+    adminPhotoUploadHandler
+  )
+  .delete(isAdminCheckAfterLogin, isAuthenticated, adminPhotoRemoveHandler);
 
-//? Create admin manually
+//? Create user or admin manually
 router
-  .route("/createadmin")
-  .post(isAdminCheckAfterLogin, isAuthenticated, adminLoginHandler);
+  .route("/useraction")
+  .get(isAdminCheckAfterLogin, isAuthenticated, adminListAllUserHandler)
+  .post(isAdminCheckAfterLogin, isAuthenticated, adminCreateNewUserHandler)
+  .patch(
+    isAdminCheckAfterLogin,
+    isAuthenticated,
+    adminUpdateUserProfileHandler
+  );
 
+//? See all loggedin users
+router
+  .route("/loggedinusers")
+  .get(isAdminCheckAfterLogin, isAuthenticated, adminAllLoggedInUsersHandler)
+  .post(isAdminCheckAfterLogin, isAuthenticated, adminRemoveSessionForAnUserHandler);
 module.exports = router;

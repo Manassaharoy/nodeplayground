@@ -85,7 +85,7 @@ const serveIndex = require("serve-index");
 
 app.use(
   "/staticfiles", //? parent link
-  express.static(path.join(__dirname, "public/")) //? Serve static files of the "public" directory
+  express.static(path.join(__dirname, "public/")), //? Serve static files of the "public" directory
   // serveIndex("public/", { icons: true }) //? This enables a FTP like view
 );
 
