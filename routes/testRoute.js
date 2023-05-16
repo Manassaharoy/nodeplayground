@@ -14,8 +14,8 @@ const prisma = new PrismaClient();
 
 router
   .route("/")
-  .get(isAuthenticated, handleTestGet)
-  .post(isAuthenticated, handleTestPost);
+  .get( handleTestGet)
+  .post( handleTestPost);
 
 router
   .route("/image")

@@ -3,8 +3,10 @@
 The env file must contain bellow values:
 
 ```
-MONGO_DATABASE_URL="mongodb+srv://username:password@testdatabase.aaaaa.mongodb.net/playground?retryWrites=true&w=majority"
-DATABASE_URL="postgresql://postgres@localhost:5432/node_db_oauth"
+MONGO_DATABASE_URL="mongodb+srv://triptoroy:triptoroy404@testdatabase.mtqw7te.mongodb.net/playground?retryWrites=true&w=majority"
+# DATABASE_URL="postgresql://postgres@localhost:5432/node_db_oauth"
+DATABASE_URL="postgresql://postgres:FXSvwBviwFWNVfWW@db.oajxusxzqqhuwzvyniyc.supabase.co:5432/postgres"
+# DATABASE_URL="postgresql://postgres:postgres@localhost:54322/postgres"
 ENCRYPTION_STATUS = "FALSE"
 
 PORT = 5001
