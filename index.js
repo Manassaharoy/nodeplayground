@@ -37,7 +37,10 @@ const {
 } = require("./middlewares/errorHandlerMiddleware.js");
 const connectPrisma = require("./config/prismaConnection.js");
 const { loadExampleData } = require("./config/oAuthModelConf.js");
-const { loadExampleDataSQL, createDefaultAdmin } = require("./config/oAuthModelConfForSQL");
+const {
+  loadExampleDataSQL,
+  createDefaultAdmin,
+} = require("./config/oAuthModelConfForSQL");
 const { coloredLog } = require("./utils/coloredLog.js");
 const responseSend = require("./utils/responseSend.js");
 const { ErrorHandler } = require("./utils/errorHandler.js");
@@ -46,6 +49,11 @@ const { ErrorHandler } = require("./utils/errorHandler.js");
 const multer = require("multer");
 const profilePhotos = multer({ dest: "public/uploads/profilePhotos" });
 const productPhotos = multer({ dest: "public/uploads/productPhotos" });
+
+//? STATIC FILE SERVE
+const path = require("path");
+const serveIndex = require("serve-index");
+const createBuckets = require("./config/supabaseConfig.js");
 
 dotenv.config();
 
@@ -70,7 +78,10 @@ connectPrisma();
 
 // loadExampleData();
 loadExampleDataSQL(); //for sql database
-createDefaultAdmin() //for sql database default admin create
+createDefaultAdmin(); //for sql database default admin create
+
+//? Supabase bucket initializing
+createBuckets();
 
 //? set the view engine to ejs
 app.set("view engine", "ejs");
@@ -79,9 +90,6 @@ app.set("view engine", "ejs");
 app.use(require("express-status-monitor")());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
-//? STATIC FILE SERVE
-const path = require("path");
-const serveIndex = require("serve-index");
 
 app.use(
   "/staticfiles", //? parent link

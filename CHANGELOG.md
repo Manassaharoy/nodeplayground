@@ -43,6 +43,9 @@
 
 - admin route and functions updated
 
-## [1.7.0]
+## [1.8.0]
 
 - added supabase support
+## [1.9.0]
+
+- supabase bucket added and local server separated

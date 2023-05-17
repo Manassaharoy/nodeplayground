@@ -6,12 +6,18 @@ const { ErrorHandler } = require("../utils/errorHandler");
 const responseSend = require("../utils/responseSend");
 const { obtainToken } = require("../utils/oAuthFunctions");
 const bcrypt = require("bcrypt");
-// TODO: Checking SQL
+const fs = require("fs");
+const dotenv = require("dotenv").config();
 
+// TODO: Checking SQL
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-//
+const { createClient } = require("@supabase/supabase-js");
+const supabase = createClient(
+  process.env.SUPABASE_DATABASE,
+  process.env.SUPABASE_SECRET_KEY
+);
 
 function sanitizeUser(user, keysToExclude) {
   const sanitizedUser = { ...user };
@@ -446,6 +452,7 @@ const adminUpdateUserProfileHandler = tryCatchMiddleware(
 
 const adminPhotoUploadHandler = tryCatchMiddleware(async (req, res, next) => {
   const userId = res.locals.useridfromtoken;
+
   let userProfileData = await prisma["user"].findUnique({
     where: {
       id: userId,
@@ -466,6 +473,52 @@ const adminPhotoUploadHandler = tryCatchMiddleware(async (req, res, next) => {
   responseSend(res, userProfileData);
 });
 
+const adminPhotoUploadToSupabaseHandler = tryCatchMiddleware(
+  async (req, res, next) => {
+    const userId = res.locals.useridfromtoken;
+
+    const filePath = req.file.path;
+    const fileData = fs.readFileSync(filePath);
+
+    const { data, error } = await supabase.storage
+      .from("profilePhotos") // Specify the bucket name here
+      .upload(req.file.filename, fileData, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    // Get the public URL of the uploaded file
+    const fileUrl = await supabase.storage
+      .from("profilePhotos") // Specify the bucket name here
+      .getPublicUrl(req.file.filename);
+
+    // Clean up the temporary file
+    fs.unlinkSync(filePath);
+
+    //TODO: profilePhotoURL is for link share from server and profilePhotoBucketURL is for supabase bucket
+
+    let userProfileData = await prisma["user"].findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        email: true,
+        phoneNumber: true,
+        createdAt: true,
+        profile: {
+          select: {
+            userId: true,
+            profilePhotoURL: true,
+            profilePhotoBucketURL: true,
+          },
+        },
+      },
+    });
+
+    responseSend(res, userProfileData);
+  }
+);
+
 const adminPhotoRemoveHandler = tryCatchMiddleware(async (req, res, next) => {
   const userId = res.locals.useridfromtoken;
 
@@ -480,7 +533,8 @@ const adminPhotoRemoveHandler = tryCatchMiddleware(async (req, res, next) => {
 
   if (
     userProfileData.profile.profilePhotoPath &&
-    userProfileData.profile.profilePhotoURL
+    userProfileData.profile.profilePhotoURL &&
+    userProfileData.profile.profilePhotoBucketURL
   ) {
     // Remove the profile photo path and URL from the profile object
     const { profilePhotoPath, profilePhotoURL, ...updatedProfile } =
@@ -494,6 +548,7 @@ const adminPhotoRemoveHandler = tryCatchMiddleware(async (req, res, next) => {
       data: {
         profilePhotoPath: null,
         profilePhotoURL: null,
+        profilePhotoBucketURL: null,
       },
     });
 
@@ -611,6 +666,7 @@ module.exports = {
   adminCreateNewUserHandler,
   adminUpdateUserProfileHandler,
   adminPhotoUploadHandler,
+  adminPhotoUploadToSupabaseHandler,
   adminPhotoRemoveHandler,
   adminAllLoggedInUsersHandler,
   adminRemoveSessionForAnUserHandler,

@@ -112,20 +112,21 @@ model Token {
 }
 
 model Profile {
-  id               String    @id @default(cuid())
-  age              Int?
-  fullName         String?
-  gender           String?
-  DOB              DateTime?
-  maritualStatus   String?
-  address          String?
-  profilePhotoPath String?
-  profilePhotoURL  String?
-  additionalData   Json?
-  nomineeData      Json?
-  updatedAt        DateTime  @default(now()) @updatedAt
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId           String    @unique
+  id                    String    @id @default(cuid())
+  age                   Int?
+  fullName              String?
+  gender                String?
+  DOB                   DateTime?
+  maritualStatus        String?
+  address               String?
+  profilePhotoPath      String?
+  profilePhotoURL       String?
+  profilePhotoBucketURL String?
+  additionalData        Json?
+  nomineeData           Json?
+  updatedAt             DateTime  @default(now()) @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String    @unique
 }
 
 enum Role {

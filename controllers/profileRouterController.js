@@ -12,7 +12,8 @@ const {
   handlePrismaGetSingleData,
   handlePrismaGetPostData,
 } = require("../handlers/prismaHandlers");
-
+const fs = require("fs");
+const dotenv = require("dotenv").config();
 // to throw error =>  throw new ErrorHandler(message, statusCode);
 // to send response => data object{} and call responseSend(res, data)
 
@@ -21,7 +22,11 @@ const {
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-//
+const { createClient } = require("@supabase/supabase-js");
+const supabase = createClient(
+  process.env.SUPABASE_DATABASE,
+  process.env.SUPABASE_SECRET_KEY
+);
 
 let getUserId = async (req) => {
   let accessToken = req.headers.authorization.split(" ")[1];
@@ -138,6 +143,7 @@ const handleProfileChanges = tryCatchMiddleware(async (req, res, next) => {
 
 const handlePhotoUpload = tryCatchMiddleware(async (req, res, next) => {
   let userId = await getUserId(req);
+
   let userProfileData = await prisma["user"].findUnique({
     where: {
       id: userId,
@@ -150,6 +156,49 @@ const handlePhotoUpload = tryCatchMiddleware(async (req, res, next) => {
         select: {
           userId: true,
           profilePhotoURL: true,
+        },
+      },
+    },
+  });
+
+  responseSend(res, userProfileData);
+});
+
+const handlePhotoUploadToBucket = tryCatchMiddleware(async (req, res, next) => {
+  let userId = await getUserId(req);
+
+  const filePath = req.file.path;
+  const fileData = fs.readFileSync(filePath);
+
+  const { data, error } = await supabase.storage
+    .from("profilePhotos") // Specify the bucket name here
+    .upload(req.file.filename, fileData, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  // Get the public URL of the uploaded file
+  const fileUrl = await supabase.storage
+    .from("profilePhotos") // Specify the bucket name here
+    .getPublicUrl(req.file.filename);
+
+  // Clean up the temporary file
+  fs.unlinkSync(filePath);
+
+  //TODO: profilePhotoURL is for link share from server and profilePhotoBucketURL is for supabase bucket
+
+  let userProfileData = await prisma["user"].findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      email: true,
+      phoneNumber: true,
+      createdAt: true,
+      profile: {
+        select: {
+          userId: true,
+          profilePhotoBucketURL: true,
         },
       },
     },
@@ -172,7 +221,8 @@ const handlePhotoRemove = tryCatchMiddleware(async (req, res, next) => {
 
   if (
     userProfileData.profile.profilePhotoPath &&
-    userProfileData.profile.profilePhotoURL
+    userProfileData.profile.profilePhotoURL &&
+    userProfileData.profile.profilePhotoBucketURL
   ) {
     // Remove the profile photo path and URL from the profile object
     const { profilePhotoPath, profilePhotoURL, ...updatedProfile } =
@@ -186,6 +236,7 @@ const handlePhotoRemove = tryCatchMiddleware(async (req, res, next) => {
       data: {
         profilePhotoPath: null,
         profilePhotoURL: null,
+        profilePhotoBucketURL: null,
       },
     });
 
@@ -247,6 +298,7 @@ module.exports = {
   handleProfileView,
   handleProfileChanges,
   handlePhotoUpload,
+  handlePhotoUploadToBucket,
   handlePhotoRemove,
   handlePasswordChange,
 };

@@ -1,9 +1,64 @@
-import { createClient } from "@supabase/supabase-js";
+const dotenv = require("dotenv").config();
+
+//? Supabase initialize
+const { createClient } = require("@supabase/supabase-js");
+const { coloredLog } = require("../utils/coloredLog");
 
 // Create a single supabase client for interacting with your database
-const supabaseDatabase = createClient(
-  "https://oajxusxzqqhuwzvyniyc.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hanh1c3h6cXFodXd6dnluaXljIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQyMTQ2MDUsImV4cCI6MTk5OTc5MDYwNX0.KdpTS9wVZcHJ7OPHMNMYkfA7RIlt0fyVaN60DixE-tc"
+const supabase = createClient(
+  process.env.SUPABASE_DATABASE,
+  process.env.SUPABASE_SECRET_KEY
 );
 
-module.exports = supabaseDatabase;
+const createBuckets = async () => {
+  await supabase.storage
+    .listBuckets()
+    .then(async (buckets) => {
+      if (buckets.data.length === 0) {
+        await supabase.storage.createBucket("profilePhotos", {
+          public: true,
+          // allowedMimeTypes: ["image/png"],
+          // fileSizeLimit: 5000,
+        });
+        coloredLog(["profilePhotos bucket created successfully"], 2);
+      } else {
+        const profilePhotosBucketExists = buckets.data.find(
+          (bucket) => bucket.name === "profilePhotos"
+        );
+
+        //TODO: REMOVE THIS IF YOU DONT NEED THIS ONE
+        const ProductPhotosBucketExists = buckets.data.find(
+          (bucket) => bucket.name === "productPhotos"
+        );
+
+        //* profilePhotos bucket
+        if (!profilePhotosBucketExists) {
+          await supabase.storage.createBucket("profilePhotos", {
+            public: true,
+            // allowedMimeTypes: ["image/png"],
+            // fileSizeLimit: 5000,
+          });
+          coloredLog(["profilePhotos bucket created successfully"], 2);
+        } else {
+          coloredLog(["profilePhotos Bucket already exists"], 1);
+        }
+
+        //TODO: REMOVE BELOW CODE IF YOU DONT NEED THIS productPhotos BUCKET
+        //* profilePhotos bucket
+        if (!ProductPhotosBucketExists) {
+          await supabase.storage.createBucket("productPhotos", {
+            public: true,
+            // allowedMimeTypes: ["image/png"],
+            // fileSizeLimit: 5000,
+          });
+          coloredLog(["productPhotos bucket created successfully"], 2);
+        } else {
+          coloredLog(["productPhotos Bucket already exists"], 1);
+        }
+      }
+    })
+    .catch((error) => {
+      coloredLog(["Error while creating bucket:", JSON.stringify(error)], 1);
+    });
+};
+module.exports = createBuckets;

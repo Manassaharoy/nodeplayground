@@ -12,6 +12,7 @@ const {
   adminPhotoRemoveHandler,
   adminAllLoggedInUsersHandler,
   adminRemoveSessionForAnUserHandler,
+  adminPhotoUploadToSupabaseHandler,
 } = require("../controllers/adminRouteController");
 const isAuthenticated = require("../middlewares/authentication");
 const {
@@ -20,6 +21,9 @@ const {
 } = require("../middlewares/roleChecking");
 const { isValidAdmin } = require("../middlewares/validationCheck");
 const { uploadSingle } = require("../handlers/imageUploadHandler");
+const {
+  uploadSingleSupabase,
+} = require("../handlers/imageUploadHandlerSupabase");
 
 router
   .route("/login")
@@ -36,15 +40,27 @@ router
   .get(isAdminCheckAfterLogin, isAuthenticated, adminProfileViewHandler)
   .patch(isAdminCheckAfterLogin, isAuthenticated, adminPofileUpdateHandler);
 
+//TODO: UNCOMMENT BELLOW IF YOU USE SUPABASE STORAGE BUCKET
 router
   .route("/profile/uploadpicture")
   .post(
     isAdminCheckAfterLogin,
     isAuthenticated,
-    uploadSingle,
-    adminPhotoUploadHandler
+    uploadSingleSupabase,
+    adminPhotoUploadToSupabaseHandler
   )
   .delete(isAdminCheckAfterLogin, isAuthenticated, adminPhotoRemoveHandler);
+
+//TODO: UNCOMMENT BELLOW IF YOU USE LOCAL FILE SYSTEM STORAGE
+// router
+//   .route("/profile/uploadpicture")
+//   .post(
+//     isAdminCheckAfterLogin,
+//     isAuthenticated,
+//     uploadSingle,
+//     adminPhotoUploadHandler
+//   )
+//   .delete(isAdminCheckAfterLogin, isAuthenticated, adminPhotoRemoveHandler);
 
 //? Create user or admin manually
 router
@@ -61,5 +77,9 @@ router
 router
   .route("/loggedinusers")
   .get(isAdminCheckAfterLogin, isAuthenticated, adminAllLoggedInUsersHandler)
-  .post(isAdminCheckAfterLogin, isAuthenticated, adminRemoveSessionForAnUserHandler);
+  .post(
+    isAdminCheckAfterLogin,
+    isAuthenticated,
+    adminRemoveSessionForAnUserHandler
+  );
 module.exports = router;
