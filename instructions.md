@@ -13,6 +13,10 @@ PORT = 5001
 ACCESS_TOKEN_LIFETIME = 3600
 MULTIPLE_DEVICE_LOGIN = "TRUE"
 
+SUPABASE_DATABASE = "https://oajxusxzqqhuwzvyniyc.supabase.co"
+SUPABASE_SECRET_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hanh1c3h6cXFodXd6dnluaXljIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4NDIxNDYwNSwiZXhwIjoxOTk5NzkwNjA1fQ.jLKu1SQQQU43icSaIQK4wohvc_W-s5j-75GJ3ylEFYs"
+SUPABASE_BUCKET_URL = "https://oajxusxzqqhuwzvyniyc.supabase.co/storage/v1/object/public/"
+
 ```
 
 ## Flow:
